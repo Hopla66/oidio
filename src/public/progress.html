@@ -1,0 +1,69 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <link href="css/oidio.css" rel="stylesheet">
+
+        <style>
+
+            .hiddenWidget { display:none}
+            .template { display:none}
+        
+            #played {
+                margin-top: 4px;
+                height: 6px;
+                width:0px;
+                background-color : green;
+                transition-timing-function: linear;
+                transition-property: width;
+                transition-duration: 0s;
+                position: absolute;
+                z-index: 2
+            }
+
+            #duration {
+                margin-top:6px;
+                height: 2px;
+                width:400px;
+                background-color: green;
+                position: absolute;
+                z-index: 1
+            }
+         </style>
+
+    </head>
+<body>
+    <script>
+        startPlaying = (duration,elapsed) => {
+            p = document.querySelector('#played');
+            width = Number(document.querySelector('#duration').offsetWidth);
+            start = Math.round( (elapsed *width)/ duration)
+            p.style.transitionDuration = (duration -elapsed)+'s';
+            p.style.paddingLeft= start+"px";
+            p.style.width =(width-start)+"px";
+        }
+        stopPlaying = () => {
+            p = document.querySelector('#played');
+            p.style.transitionDuration = '0s';
+            p.style.width = p.style.paddingLeft = "0px";
+        }
+        togglePlaying = () => {
+            p = document.querySelector('#played').getAnimations().forEach( (a)=> {
+                    ( a.playState == 'running') ? a.pause() : a.play()}
+                )
+        }
+    </script>
+
+    <div>
+        <button onclick="startPlaying(10, 2)">play</button>           
+        <button onclick="stopPlaying()">stop</button>           
+        <button onclick="togglePlaying()">pause</button>           
+    </div>
+
+    <div style="position:relative">
+        <div id="played"> </div>
+        <div id="duration"></div>
+    </div>
+
+    </body>
+</html>

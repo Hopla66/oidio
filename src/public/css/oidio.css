@@ -1,0 +1,128 @@
+html {
+  background-color : black;
+  width : 100%;
+  color : white;
+  font-family : Roboto, sans-serif;
+}
+
+
+
+.container {
+  display: grid;
+  grid-template-columns: 20rem 1fr;
+  grid-template-rows: 10rem 1fr;
+  grid-gap: .5rem;
+  height:100vh;
+}
+.header {
+  grid-column:1 /span 2;
+  grid-row: 1;
+}
+
+.left {
+  grid-row: 2;
+}
+
+.content {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.action {
+  width: 80px;
+}
+
+
+ul {
+  list-style-type: none;
+  padding: 10px 20px;
+  overflow-y : scroll;
+  height:600px;
+}
+#artist {
+  display:block;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: bold;
+  color : red;
+}
+h3 {
+  font-size: 13px;
+  font-weight: bold;
+  color : red;
+  margin-bottom: 0px;
+  margin-top: 2px;
+}
+#info .t1 {
+  margin-left: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color : red;
+}
+.albums  {
+    display: flex;
+    margin-bottom: 30px;
+    overflow-x : auto;
+    width: 1400px;
+}
+.albumThumb {
+  margin-left: 10px;
+}
+
+.albumThumb  > img{
+  width: 150px;
+}
+.album {
+  display:flex;
+  background-color: back;
+}
+
+.album > img {
+  width: 300px;
+  height: 300px;
+  margin-right:20px;
+}
+#tracks {
+  border-collapse:collapse;
+  display:inline-block
+}
+#tracks th   {
+  font-weight: bold;
+  color: black;
+  background-color: lightgrey;
+}
+#tracks td, #tracks th {
+  padding-left: 10px;
+}
+#tracks td:nth-child(even), #tracks th:nth-child(even) {
+  text-align: start;
+}
+#tracks td:nth-child(odd), #tracks th:nth-child(odd) {
+  text-align:end;
+}
+
+#played {
+  margin-top: 4px;
+  height: 6px;
+  width:0px;
+  background-color : green;
+  transition-timing-function: linear;
+  transition-property: width;
+  transition-duration: 0s;
+  position: absolute;
+  z-index: 2
+}
+
+#duration {
+  margin-top:6px;
+  height: 2px;
+  width:400px;
+  background-color: green;
+  position: absolute;
+  z-index: 1
+}
+
+.hiddenWidget { display:none}
+.template { display:none}

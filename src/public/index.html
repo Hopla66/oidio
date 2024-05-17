@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>iodio</title>
+    <meta charset="utf-8">
+    <link href="public/css/oidio.css" rel="stylesheet">
+    <link href="public/css/fontawesome.css" rel="stylesheet" />
+    <link href="public/css/solid.css" rel="stylesheet" />
+    <link href="public/css/regular.css" rel="stylesheet" />
+  </head>
+  
+  <script>
+    //run it first ( but it isn't executed before img src is executed :( )
+    document.addEventListener("DOMContentLoaded", (e) => { 
+      TEMPLATES = Array.from( document.querySelectorAll(".template")).reduce( (dict, elt) => { dict[elt.id] = elt.innerHTML; return dict}, {});
+      document.querySelectorAll(".template").forEach( x => { x.parentNode.removeChild(x)})
+    });
+  </script> 
+
+  <body onLoad="getStatus();getArtistList(); startWebSocket()">
+    <div class="container">
+      <div class="header" >
+        <span>
+        <button class="action"><i class="fa-solid fa-backward-step fa-4x"></i></button>
+        <button id="play" class="action" onClick="togglePlay()"> <i class="fa-solid fa-pause  fa-4x"></i></button>
+        <button class="action"><i class="fa-solid fa-forward-step fa-4x"></i></button>
+        </span>
+        <span id="info"></span>
+       </div>
+      <div class="left" >
+        <ul id='artists'>
+        </ul>      
+      </div>
+      <div class="content" >
+        <div id='artist'>
+          <h2 id="name"> </h2>
+          <div id="albums" class="albums"> </div>
+          <div id="album" class="album"></div>
+        <div>
+      </div>
+    
+    </div>
+
+    <div id="t_play_song" class="template">
+      <div style="display: inline-block;">
+        <span class="t1">${artist}</span><span class="t1">${album}</span>
+        <span class="t1">${title}</span>
+        <div style="position:relative">
+          <div id="played"   class='stopPlaying'> </div>
+          <div id="duration" class='playing'></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="t_play_radio" class="template">
+      <span class="t1">Radio</span><span class="t1">${name}</span>
+    </div>
+
+    <div id="t_album" class="template">
+      <div  class="albumThumb">
+        <img src="static/${cover}" onclick="displayAlbum('${idx}')">
+        <h3>${name}</h3>
+        <div>${year}</div>
+      </div>
+    </div>
+
+    <div id="t_tracks" class="template">
+      <img src="static/${cover}" onclick="playAlbum('${artist}','${name}')">
+      <table id="tracks">
+        <thead>
+          <tr>
+            <th></th><th>${name}</th><th>${sec}</th>
+          </tr>
+          <tr id="t_track" class="template">
+            <td>${tracknumber}</td><td onclick="play('${file}')">${name}</td><td>${sec}</td>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div id="t_artist_list"  class="template">
+      <li onclick="getArtist('${name}')">${name}</li>
+    </div>
+
+    
+    <script>
+      // adds a css class to an HTML element		
+      const addClass = ( elt, add, className) => add ? elt.classList.add( className) : elt.classList.remove( className);
+
+      const toggleIcon = (play) => { elt = document.querySelector('#play > i'); 
+                                   addClass( elt, play, 'fa-pause'); addClass( elt, !play, 'fa-play') }
+
+      inject = (str, obj) => str.replace(/\${(.*?)}/g, (x,g)=> { return obj[g]});
+      injectTemplate = (id, obj) => inject( TEMPLATES[id], obj)
+     
+      clear = (x) =>{ while ( x.firstChild) { x.removeChild( x.lastChild);}  }
+
+      formatTime = (s) => new Date(s * 1000).toISOString().slice(  (s > 3600 ? 11 : 14), 19)
+
+      startPlaying = (duration,elapsed) => {
+        p = document.querySelector('#played');
+        width = Number(document.querySelector('#duration').offsetWidth);
+        start = Math.round( (elapsed *width)/ duration)
+        p.style.transitionDuration = (duration -elapsed)+'s';
+        p.style.paddingLeft= start+"px";
+        p.style.width =(width-start)+"px";
+      }
+      stopPlaying = () => {
+        p = document.querySelector('#played');
+        p.style.transitionDuration = '0s';
+        p.style.width = p.style.paddingLeft = "0px";
+      }
+      togglePlaying = () => {
+        p = document.querySelector('#played');
+        p && p.getAnimations().forEach( (a)=> {
+                ( a.playState == 'running') ? a.pause() : a.play()}
+            )
+      }
+
+      ARTIST = {}
+
+      function storeArtist( artist) {
+        defaultYear = (y) => (y === undefined || y =='') ? 9999 : +y 
+        filterChars = (str) => str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+
+        artist.albums.sort( (x,y) => defaultYear(x.year) - defaultYear(y.year))
+        artist.albums.forEach( (album,i) => {
+          album.length = album.tracks.reduce( (total, track) => { total += +track.length; 
+                                                                  track.sec = formatTime( track.length)
+                                                                  track.file = filterChars( track.file)
+                                                                  return total} ,0)
+          album.sec = formatTime( album.length)
+          album.idx = i
+          album.artist = filterChars( artist.name)
+          album.name = filterChars( album.name)
+        })
+        ARTIST = artist
+      }
+
+      function displayAlbum( idx) {
+        al = document.querySelector( '#album');
+        clear(al)
+
+        t = injectTemplate( "t_tracks", ARTIST.albums[idx])
+        al.insertAdjacentHTML('beforeend', t)
+
+        table = al.querySelector( '#tracks');
+        ARTIST.albums[idx].tracks.forEach( (t) => {
+          row = injectTemplate( "t_track", t)
+          table.querySelector( 'tbody').insertAdjacentHTML('beforeend', row)
+        })
+      }
+
+      function displayArtists( list) {
+        ul = document.querySelector( '#artists');
+        list.forEach( a => {
+          t = injectTemplate("t_artist_list", {name : a})
+          ul.insertAdjacentHTML('beforeend', t)
+        })
+      }
+
+      function displayStatus( status) {
+        console.log(" Status ::" + JSON.stringify(status))
+        toggleIcon(status.state == 'play')
+        info = document.querySelector( '#info');
+        if (status.state == 'stop') {
+          return;
+        }
+        if( status.state == 'pause') {
+          togglePlaying();
+        }
+        clear( info);
+
+        t = ( status.type == 'track') ? injectTemplate( "t_play_song", status.currentSong)
+                                      : injectTemplate( "t_play_radio", status.currentSong);
+        info.insertAdjacentHTML('beforeend', t)
+        if( status.type == 'track') {
+          console.log(" duration="+status.currentSong.time+"  elapsed="+status.currentSong.elapsed)
+          startPlaying( status.currentSong.time, status.currentSong.elapsed)
+        }
+      }
+
+      function displayArtist( artist) {
+          f = document.querySelector( '#artist');
+          f.querySelector( '#name').innerHTML = artist.name
+          al = f.querySelector( '#albums')
+          clear( al)
+          clear( f.querySelector( '#album'))
+          artist.albums.forEach( (a) => {
+            	row = injectTemplate("t_album", a)
+              al.insertAdjacentHTML('beforeend', row)
+          })
+          if( artist.albums.length == 1)
+            displayAlbum( 0)
+      }
+
+      async function callServer(url, params ) {
+        console.log(`request [${params.method}] ${url} ...`);
+
+        const response = await fetch (url, params);
+        if( !response.ok) {
+          const text = await response.text();
+          throw new Error ( `Unable to fetch response for ${url} : ${response.status} - ${text}`);
+        }
+        return response.json();
+      }  
+      
+      getRequest = (url) => callServer( url, { method: "GET"})
+      postRequest = (url, params) => callServer( url, { body: params, method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" } })
+
+      function getStatus() {
+        getRequest('/status')
+        .then( data => {
+          displayStatus( data)
+        })
+      }
+      function getArtist(name) {
+        getRequest('artist/'+name)
+        .then( data => {
+            storeArtist( data)
+            displayArtist( data)
+        })
+      }
+
+      function getArtistList() {
+        getRequest('/artists')
+        .then( data => {
+            displayArtists( data.artists)
+        })
+      }
+
+      function togglePlay() {
+        postRequest( 'control/play',  '')
+      }
+
+      function play( file) {
+        postRequest( 'play/',  JSON.stringify({ song: file}))
+      }
+
+      function playAlbum( artist, album) {
+        postRequest( 'play/',  JSON.stringify({ "artist": artist, "album": album}))
+      }
+
+      function startWebSocket() {
+
+        var ws = new WebSocket("ws://localhost:8000/ws");
+        ws.onmessage = function(event) {
+          console.log('received ...'+event.data)
+          displayStatus( JSON.parse( event.data))
+        }
+        
+        ws.addEventListener("open", (ev) => {
+          ws.send("status");
+        });
+        
+        console.log("start websocket")  
+        //ws.send('status')
+      }
+
+
+     </script>
+
+  </body>
+</html> 

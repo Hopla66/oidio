@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<style>
+			.hiddenWidget { display:none}
+			.template { display:none}
+		</style>
+	</head>
+	<body>
+	
+		
+		<button type="button" onClick="toggleTable()">Click Me!</button>
+		
+		<label for="cars">Choose a car:</label>
+
+		<select name="cars" id="cars" onChange="toggleSelection( this)">
+		  <option value="volvo">Volvo</option>
+		  <option value="saab">Saab</option>
+		  <option value="mercedes">Mercedes</option>
+		  <option value="audi">Audi</option>
+		</select>
+		
+
+		<table>
+			<tr class="canBeHidden">
+				<td>hello1</td><td>world</td>
+			</tr>
+			<tr class="canBeHidden">
+				<td>hello2</td><td>world</td>
+			</tr>
+			<tr>
+				<td>hello3</td><td>world</td>
+			</tr>
+		</table>
+
+		<input type="text" id="bInput1" name="bInput1">
+		<input type="text" id="bInput2" name="bInput2">
+		<button type="button" onClick="showObject()">show value</button>
+		<br>
+		<form action="/action_page.php" method="post">
+  <input type="email" name="fname" required>
+  <input type="date" name="fdate" min='2023-08-02' max='2023-08-16'>
+  <input type="datetime-local" name="ftime" required>
+  <input type="submit" value="Submit">
+</form>
+
+<div >
+	<table id='orders'>
+		<thead>
+			<tr>
+				<th>Order</th><th>Customer</th><th>Date</th><th>Total</th>
+			</tr>
+			<tr class='template'>
+				<td>${id}</td><td>${customerName}</td><td>${date}</td><td>${total}</td>
+			</tr>
+		</thead>
+		<tbody>
+			
+		</tbody>
+	</table>
+</div>
+		<button type="button" onClick="loadOrderTable()">Populate Table</button>
+		<button type="button" onClick="clearOrderTable()">Clear Table</button>
+
+	</body>
+	<script>
+/*		
+history.pushState(null, document.title, location.href);
+
+window.addEventListener('popstate', function (event)
+{
+  history.pushState(null, document.title, location.href);
+ 
+  
+});	
+		
+		// adds a css class to an HTML element		
+		const addClass = ( elt, add, className) => add ? elt.classList.add( className) : elt.classList.remove( className);
+		// makes an HTML element visible/invisible by removing/adding a css class containing 'display:none'
+		const showElement = ( elt, visible) =>  addClass( elt, !visible, "hiddenWidget");
+		// applies a function to all HTML elements having a given CSS class
+		const applyToClass = (className, fn) => Array.from( document.getElementsByClassName( className)).forEach( fn);
+		// shows/hides HTML elments that have CSS class 'canBeHidden'
+		const showElements = (visible) => 	applyToClass( "canBeHidden", x => showElement(x, visible)); 
+		
+	
+		const toggle = (fn, initialState) => {
+			let status = initialState;
+			return (expected) => {
+				if( expected === undefined || expected != status) {
+					fn( status);
+					status = !status;
+				}
+			}
+		} 
+
+		const toggleTable = toggle(showElements, false);
+		toggleTable();
+
+		const toggleSelection = (select) => {
+			selection = select.options[select.selectedIndex].value
+			toggleTable( (selection === "volvo")); 
+		}
+	
+		
+		const fct1 = x => y => z => x + y + z;
+		
+		function fct2(x) {
+			return function(y) {
+				return function(z) {
+					console.log ( "x="+x+"  y="+y+"  Z="+z);
+					return x +y+z;
+				}
+			}
+		}
+		console.log( fct1(1)(2)(3));
+		
+		console.log( fct2(1)(2)(3));
+		
+		
+		const dispatchTable = { PIPO :  (state, action) => {console.log("pipo"); return "PIPO" },
+														BINGO : (state, action) => {console.log("bingo"); return "BINGO" } 
+													};
+		
+		const doAction3 = (state = initialState, action) =>
+  										(dispatchTable[action.type] && dispatchTable[action.type](state, action)) || state;
+  										
+    function doAction2(state = initialState, action) {
+    	console.log( action);
+		  return dispatchTable[action.type] ? dispatchTable[action.type](state, action) : state;
+		}
+		
+		action = {type : "PIPO"}
+  										
+  	console.log( " ACTION = "+doAction3("initial", action));								
+  	
+  	
+  	
+  const range = (a, b)	=> Array.from({ length: b-a+1 }, (v, i) => i+a);
+  
+  range(4,5).forEach( x => {console.log(x)});
+  
+  
+  const addLogging = (fn, logger = console.log) => (...args) => {
+	  logger(`entering ${fn.name}: (${args})`);
+	  try {
+		  const valueToReturn = fn(...args);
+		  logger(`exiting ${fn.name}: ${valueToReturn}`);
+		  return valueToReturn;	  	
+	  } catch( thrownError) {
+	  	logger(`exiting ${fn.name}: threw ${thrownError}`);
+	  	throw thrownError;  
+	  }
+	};
+	
+	
+	addLogging( range)(1,10);
+	
+	
+	const Tree = (value, left, right) => (destructure, __) =>  destructure(value, left, right);
+
+const EmptyTree = () => (__, destructure) => destructure();
+	
+	const myTree = Tree(
+  22,
+  Tree(
+    9,
+    Tree(4, EmptyTree(), EmptyTree()),
+    Tree(12, EmptyTree(), EmptyTree())
+  ),
+  Tree(
+    60,
+    Tree(56, EmptyTree(), EmptyTree()),
+    EmptyTree()
+  )
+);
+
+const treeCount = aTree => aTree(
+  (value, left, right) => 1 + treeCount(left) + treeCount(right),
+  () => 0
+);
+
+const sum = aTree => aTree( (value, left, right) => value + sum(left) +sum(right), ()=> 0);
+
+console.log("treecount = "+treeCount(myTree));
+
+console.log("sum = "+sum(myTree));
+
+
+console.log( "test :: "+ myTree( (value, left, right) => value, () => -1 ) );
+*/
+
+
+let pics = [ {name:'pict1',pos: 0, comment: 'initial 0'},
+						 {name:'pict2',pos: 1, comment: 'initial 1'}, 
+						 {name:'pict3',pos: 2, comment: 'initial 2'}
+						 ];
+console.log(pics[1]);
+
+let y =  Object.assign({}, pics[1]);
+y.pos=0;
+console.log(y);
+
+
+function arraymove(arr, fromIndex, toIndex) {
+    var element = arr[fromIndex];
+    arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, element);
+}
+
+
+function move(array1, from, to) {
+	let array = array1.slice(0, array1.length);
+  if( to === from ) return array;
+
+  var target = Object.assign({}, array[from]);
+  target.pos = to;                         
+  var increment = to < from ? -1 : 1;
+
+  for(var k = from; k != to; k += increment){
+    array[k] = Object.assign({}, array[k + increment]);
+    array[k].pos = k;
+  }
+  array[to] = target;
+  return array;
+}
+
+
+function movePict( list, from, to) {
+
+	return list.map( (x,i) => { let p = Object.assign({}, x); p.pos = 100+i; return p; })
+
+/*
+	let y = list[from];
+	let moved = Object.assign({}, y);
+	console.log(moved)
+	moved.pos = to;
+
+	return list.map( p => { if( p.pos = moved.pos) return moved
+				else if(p.pos < to && p.pos > from) return p
+				else return list[p.pos+1];
+			      });
+*/
+}
+
+let x = move( pics, 2,0);
+console.log(x);
+
+console.log(pics);
+
+let regex = /^IMG_.*\.jpg$/;
+console.log( "pipo.txt".match(regex));
+console.log( "pipo.jpg".match(regex));
+console.log( "IMG_123.jpg".match(regex) != null);
+console.log( "IMG______jpg".match(regex) != null);
+console.log("use test");
+console.log( regex.test("aIMG_123.jpg"));
+
+/*
+fetch('https://devcloud.ubs.net/api/v4/projects/116814/ref/master/trigger/pipeline?token=a28bcbe13c863c894ab2b9e0761f1b', {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+})
+   .then(response => response.json())
+   .then(response => console.log(JSON.stringify(response)))
+
+*/		
+/*
+ Simple one way binding :: https://www.atmosera.com/blog/data-binding-pure-javascript/
+*/
+
+function Binding(b) {
+    _this = this
+    this.element = b.element    
+    this.value = b.object[b.property]
+    this.attribute = b.attribute
+    
+    this.valueGetter = function(){
+    	console.log("custom getter. Value is : "+_this.value);
+        return _this.value;
+    }
+    this.valueSetter = function(val){
+        _this.value = val
+        console.log( "custom setter. New value is : "+val);
+        if(_this.element) _this.element[_this.attribute] = val
+    }
+
+    Object.defineProperty(b.object, b.property, {
+        get: this.valueGetter,
+        set: this.valueSetter
+    }); 
+    //b.object[b.property] = this.value;
+
+    if(b.element) b.element[b.attribute] = this.value;
+    
+    if(b.event && b.element){
+        b.element.addEventListener(b.event, function(event){
+            _this.valueSetter( _this.element[_this.attribute]);
+        })        
+    }    
+
+}		
+console.log("declare Object ...");
+var bindingObj = {attr1:"pipo"};
+console.log("object declared");
+
+function showObject() {
+	console.log(" object is " +JSON.stringify( bindingObj))
+}
+
+//new Binding( { object: bindingObj, property: "attr1", element: document.getElementById("bInput1"), attribute: "value", event:"input" });
+//console.log("show value "+bindingObj.attr1);
+//bindingObj.attr1 = "bingo";
+		
+	
+	BindingB = function ( obj, property) {
+		value = obj[property];
+		htmlEltBindings = [];
+		
+    valueGetter = () => {
+      return value;
+    }
+    
+    valueSetter = (val) => {
+    	value = val;
+    	htmlEltBindings.forEach( setElt => setElt(val))
+    }
+    
+    
+    this.addBinding = function( htmlElt, attribute, event) {
+    	if( htmlElt && attribute) { 
+    		setElt = x => htmlElt[attribute] = x;
+    	  htmlEltBindings.push( setElt);
+    	  setElt( value);
+			}
+			if( htmlElt && attribute && event) {
+				htmlElt.addEventListener( event, event =>  valueSetter( htmlElt[attribute]));
+    	}
+    	return this;
+    }
+    
+    Object.defineProperty(obj, property, {
+        get: valueGetter,
+        set: valueSetter
+    }); 
+
+		
+	}	
+
+//new BindingB( bindingObj, "attr1")
+//	  .addBinding(  document.getElementById("bInput2"),   "value",  "input" )
+//	  .addBinding(  document.getElementById("bInput1"),   "value",  "input" );
+console.log("show value "+bindingObj.attr1);
+bindingObj.attr1 = "bingo";
+
+
+
+
+let DATA = {
+	users:[
+	  {id:1, name:'laurent', dob:'28-11-1966', adress:'20, avenue de lutterbach, 68200 Mulhouse'},
+	  {id:2, name:'mickey', dob:'01-05-1951', adress:'Disneyland'}
+	],
+	products: [
+	  {id:1, name:'cuillère', price: 5.5, quantity: 100},
+	  {id:2, name:'couteau', price: 3.5, quantity: 10},
+	  {id:3, name:'fourchette', price: 3.5, quantity: 27},
+	],
+	orders: [
+	  {id: 1, customer:1, order_dt:'03-08-2023 10:25', total: 21, details: [{product:2, quantity:1}, {product: 3, quantity:5}]}
+	]
+}
+
+let getData = (type) => {return DATA[type]};
+
+let updateData = (type, newData) => {
+	let dataSet = getData( type);
+	dataSet.forEach((item, i) => { if (item.id == newData.id) dataSet[i] = newData; });
+	}
+let addData = (type, newData) => {
+	let dataSet = getData( type);
+	newData.id = Math.max( ...dataSet.map( (x) => x.id))+1;
+	dataSet.push(newData)
+	}	
+	
+let delData = (type, id) => {
+	let dataSet = getData( type).filter( x => x.id!= id)
+	DATA[type] = dataSet;
+}	
+let findById = (id, list) => {return list.filter( x => x.id == id)[0] };
+
+console.log( "users : "+ JSON.stringify(getData('users')) )	
+let newUser = {id:1, name:'anna', dob:'28-11-1964', adress:'20, avenue de lutterbach, 68200 Mulhouse'}
+addData( 'users', newUser);
+console.log( "users : "+ JSON.stringify(getData('users')) )	
+updateData( 'users', {id:3, name:'joelle', dob:'28-11-1970', adress:'20, avenue de lutterbach, 68200 Mulhouse'} )
+console.log( "users : "+ JSON.stringify(getData('users')) )	
+delData( 'users', 3)
+console.log( "users : "+ JSON.stringify(getData('users')) )	
+console.log( "user #2 : "+ JSON.stringify(findById( 1, getData('users'))) )	
+
+let getCustomerName = (id) => { return findById( id, getData('users'))}
+console.log('user name '+ JSON.stringify( getCustomerName(1).name))
+
+
+let inject = (str, obj) => str.replace(/\${(.*?)}/g, (x,g)=> {  console.log( 'x='+x+' g='+g)      ;return obj[g]});
+
+
+let addRow = (id, data) =>
+{
+	table = document.querySelector( '#'+id);
+	row = inject( table.querySelector( " tr[class='template']").innerHTML, data)
+	table.querySelector( 'tbody').insertAdjacentHTML('beforeend', row)
+}
+let addRows = (id, data) => data.forEach( x=> addRow(id, x))
+
+//addRow( 'orders', {id:1, customerName: 'toto23', date: '2023-08-14', total: '15.3'} )
+//addRows( 'orders', [{id:2, customerName: 'toto234', date: '2023-08-14', total: '15.3'},  {id:3, customerName: 'toto239', date: '2023-08-14', total: '15.3'}])
+
+//clearTable = (id) => document.querySelectorAll( '#'+id+" tbody tr:not(.template)").forEach( (x) =>x.remove())
+clearTable = (id) => document.querySelector( '#'+id+" tbody").innerHTML = ""
+
+removeRow = (id, row) =>  docment.querySelector( '#'+id).deleteRow( row)
+
+clearOrderTable = () => clearTable('orders');
+loadOrderTable = () => addRows( 'orders', [{id:2, customerName: 'toto234', date: '2023-08-14', total: '15.3'},  {id:3, customerName: 'toto239', date: '2023-08-14', total: '15.3'}])
+
+
+function toggleSort( data, initialSortAttr, initialSortOrder) 
+{
+	var sortedData = data;
+	var sortState = {};
+	Object.getOwnPropertyNames( data[0]).forEach( x =>  sortState[x] = 0);
+  sortState[initialSortAttr]	= initialSortOrder;
+
+	this.on = (attr) => {
+		sortState[attr] = ( sortState[attr] == 0) ? 1 : -sortState;
+	}
+	
+	this.print = () => console.log( sortState.id+" "+sortState.name+" "+sortState.price)
+}
+
+let s = new toggleSort( DATA.products, "id", 1);
+s.print();
+s.on( "price");
+s.print();
+
+	</script>
+</html>

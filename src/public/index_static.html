@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>iodio</title>
+    <meta charset="utf-8">
+    <link href="css/oidio.css" rel="stylesheet">
+    <link href="css/fontawesome.css" rel="stylesheet" />
+    <link href="css/solid.css" rel="stylesheet" />
+    <link href="css/regular.css" rel="stylesheet" />
+  </head>
+  <body >
+
+    <style>
+
+.played {
+  stroke-dasharray: 200px;
+  stroke-dashoffset: 0px;
+  transition: stroke-dashoffset 10s linear;
+  stroke:#73AF55; 
+  stroke-width:6;
+}
+
+.base { 
+  stroke:#d9d9d9;
+  stroke-width:2;
+  stroke-dasharray: 200px;
+  stroke-dashoffset: 0px;
+}
+
+#a:checked + svg  .played{stroke-dashoffset: 0;}
+
+.player {
+  appearance:none;
+  border: 2px solid #f50;
+  background: black;
+}
+
+</style>
+
+<script>
+
+var ws = new WebSocket("ws://localhost:8000/ws");
+      ws.onmessage = function(event) {
+          console.log('received ...'+event.data)
+      }
+      function startWebSocket() {
+        console.log("start websocket")  
+        ws.send('status')
+      }
+
+
+</script>
+
+
+    <div class="container">
+      <div class="header" >
+        <span>
+          <button class="action"><i class="fa-solid fa-backward-step fa-4x"></i></button>
+          <button id="play" class="action" onClick="togglePlay()"> <i class="fa-solid fa-pause  fa-4x"></i></button>
+          <button class="action"><i class="fa-solid fa-forward-step fa-4x"></i></button>
+          </span>
+          <span id="info">
+            <button onclick="{ 
+              
+              f = document.querySelector('#pb');
+              running = f.style.animationPlayState === 'running';
+              if( running) {
+                console.log('running -> pause')
+                f.style.strokeDashoffset = '200px';
+                f.style.animationPlayState = 'paused';
+              } else {
+                f.style.strokeDashoffset = '0px'; 
+                f.style.animationPlayState = 'running';
+              }
+            }">
+              action
+            </button>
+
+            <svg id="a1" width="200px" height="20px">
+              <line class="base" x1="0" y1="10" y2="10" x2="100%"/>
+              <line id="pb" class="played" x1="-100%" y1="10" y2="10" x2="100%"/>
+            </svg>
+  
+
+          </span>
+          <input class="player" type="range" min="0" max="100"/>
+
+      </div>
+      <div class="left" >
+        <ul id='artists'>
+        </ul>      
+      </div>
+      <div class="content" >
+        <div id='artist'>
+          <h2 id="name"> ABBA</h2>
+          <div id="albums" class="albums"> 
+            <div  class="albumThumb">
+              <img src="static/ea2a31c46bd9b9f7c7ca37169142cc4a.jpg">
+              <h3>very loooong name of album</h3>
+              <div>${year}</div>
+            </div>
+            <div  class="albumThumb">
+              <img src="static/8917fe9523106b254e8e7b2009c27fe9.jpg"><br>
+              <span>${name}</span><br>
+              <span>${year}</span>
+            </div>            
+          </div>
+
+          <div id="album" class="album">
+
+            <img src="static/8917fe9523106b254e8e7b2009c27fe9.jpg">
+            <table id="tracks" >
+              <thead>
+                <tr>
+                  <th>.</th><th>This is mw album</th><th>01:02:35</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td><td>very long name of song .........dgjhfgkfhgkh.........</td><td>04:40</td>
+                </tr>
+                <tr>
+                  <td>2</td><td>${name}</td><td>${sec}</td>
+                </tr>
+
+                        
+              </tbody>
+            </table>
+          </div>            
+
+
+          </div>
+        <div>
+      </div>
+    
+    </div>
+  
+
+
+  </body>
+
+  <script>
+    const svg = document.querySelector("#a1");
+  svg.onclick = (evt) => {
+    console.log("PAUSE")
+    if (svg.animationsPaused()) {
+      svg.unpauseAnimations();
+    }
+    else {
+      console.log("... pause")
+      svg.pauseAnimations();
+    }
+  };
+  </script>
+
+</html> 
