@@ -56,11 +56,14 @@ import json
 import logging
 
 async def main( p:Player):
-    #await p.connect()
-    while True:
+    await p.connect()
+    pl = await p.getPlaylist()
+    print( json.dumps(pl))
+"""    while True:
         await p.idle()
         s = await p.getStatus()
         print( json.dumps(s))
+"""
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 p = Player("192.168.0.51", logger=__name__)

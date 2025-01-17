@@ -1,0 +1,144 @@
+
+    <script id="t_play_song" type="text/x-dot-template">
+      <div style="display: inline-block;">
+        <span class="t1">{{=it.artist}}</span><span class="t1">{{=it.album}}</span>
+        <span class="t1">{{=it.title}}</span>
+        <div style="position:relative">
+          <div id="played"   class='stopPlaying'> </div>
+          <div id="duration" class='playing'></div>
+        </div>
+      </div>
+      <div>
+        time<span id="time">xxxx</span>
+      </div>
+    </script>
+
+    <script id="t_play_radio" type="text/x-dot-template">
+      <span class="t1">Radio</span><span class="t1">{{=it.title}}</span>
+    </script>
+
+
+    <script id="t_artist" type="text/x-dot-template">
+      <h2 id="name">{{=it.name}} </h2>
+      <div id="albums" class="albums"> 
+      {{~ it.albums :p }}
+        <div  class="albumThumb">
+          <img class="thumb" src="static/{{=p.cover}}" onclick="displayAlbum('{{=p.idx}}')">
+          <h3>{{=p.name}}</h3>
+          <div>{{=p.year}}</div>
+        </div>
+      {{~ }}      
+      </div>
+      <div id="album" class="album"></div>
+    </script>
+
+
+    <script id="t_album" type="text/x-dot-template">
+
+      {{~ it :p }}
+      <div  class="albumThumb">
+        <img src="static/{{=p.cover}}" onclick="displayAlbum('{{=p.idx}}')">
+        <h3>{{=p.name}}</h3>
+        <div>{{=p.year}}</div>
+      </div>
+      {{~ }}
+
+    </script>
+
+    <script id="t_radio" type="text/x-dot-template">
+      <h2 id="name">{{=it.name}} </h2>
+      <div id="albums" class="radios">
+        {{~ it.albums :p }}
+        <div  class="radioThumb">
+          <img class="thumb" src="static/{{=p.cover}}" onclick="play('{{=p.tracks[0].file}}')">
+          <h3>{{=p.name}}</h3>
+        </div>
+        {{~ }}
+      </div>
+
+    </script>
+
+    <script id="t_tracks" type="text/x-dot-template">
+      <img src="static/{{=it.cover}}" onclick="playAlbum('{{=it.artist}}','{{=it.name}}')">
+      <table id="tracks">
+        <thead>
+          <tr>
+            <th></th><th>{{=it.name}}</th><th>{{=it.sec}}</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{~ it.tracks :p }}
+          <tr>
+            <td>{{=p.tracknumber}}</td><td onclick="play('{{=p.file}}')">{{=p.name}}</td><td>{{=p.sec}}</td>
+          </tr>
+        {{~}}
+        </tbody>
+      </table>
+    </script>
+
+    <script id="t_playlist" type="text/x-dot-template">
+      <table id="pl">
+        <thead>
+          <tr>
+            <th>Artist</th><th>Album</th><th>Song</th>
+          </tr>
+        </thead>
+      <tbody>
+
+      {{~ it :p }}
+          <tr>
+            <td>{{=p.artist}}</td><td>{{=p.album}}</td><td>{{=p.title}}</td><td>{{=p.sec}}</td>
+          </tr>
+      {{~}}
+
+      </tbody>
+    </table>
+  </script>
+
+  <script id="t_artist_list"  type="text/x-dot-template">
+    <li onclick="getRadioList()">RADIOS</li>
+    {{~ it :p }}
+      <li onclick="getArtist('{{=p.query}}')">{{=p.name}}</li>
+    {{~}}
+   </script>
+
+  <script id="t_table_loop"  type="text/x-dot-template">
+      <table id="loop">
+        <thead>
+          <tr>
+            <th>Artist</th><th>Album</th><th>Song</th>
+          </tr>
+        </thead>
+      <tbody>
+
+      {{~ it.tracks :p }}
+        <tr>
+          <td>{{=it.artist}}</td><td>{{=it.album}}</td><td>{{=p.title}}</td><td>{{=p.sec}}</td>
+        </tr>
+      {{~}}
+
+      </tbody>
+    </table>
+      
+  </script>
+
+
+  <script id="t_array_loop"  type="text/x-dot-template">
+      <table id="loop">
+        <thead>
+          <tr>
+            <th>Artist</th><th>Album</th><th>Song</th>
+          </tr>
+        </thead>
+      <tbody>
+
+      {{~ it :p }}
+        <tr>
+          <td>{{=p.artist}}</td><td>{{=p.album}}</td><td>{{=p.title}}</td><td>{{=p.sec}}</td>
+        </tr>
+      {{~}}
+
+      </tbody>
+    </table>
+      
+  </script>

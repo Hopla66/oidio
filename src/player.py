@@ -15,7 +15,7 @@ class Player(object):
         self.client.idletimeout = None          # timeout for fetching the result of the idle command is handled seperately, default: None
         self.server = server
         self.port = port
-        self.client.connect( server, port)      # connect to localhost:6600
+        #self.client.connect( server, port)      # connect to localhost:6600
         self.artists = Artists()
         if logger != '':
           self.logger = logging.getLogger( logger)

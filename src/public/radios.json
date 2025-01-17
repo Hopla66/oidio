@@ -1,0 +1,13 @@
+[
+    { "name" : "Fip", "file" : "http://direct.fipradio.fr/live/fip-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "Fip Jazz", "file" : "http://icecast.radiofrance.fr/fipjazz-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "Fip Monde", "file" : "http://direct.fipradio.fr/live/fipworld-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "Fip Pop", "file" : "http://direct.fipradio.fr/live/fippop-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "Fip Rock", "file" : "http://direct.fipradio.fr/live/fiprock-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "Fip Nouveauté", "file" : "http://direct.fipradio.fr/live/fipnouveautes-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
+    { "name" : "France Inter", "file" : "http://direct.franceinter.fr/live/franceinter-hifi.aac", "cover":"France_Inter.jpg", "type": "radio"},
+    { "name" : "France Culture", "file" : "http://direct.franceculture.fr/live/franceculture-hifi.aac", "cover":"France_Culture.jpg", "type": "radio"},
+    { "name" : "France Musique", "file" : "http://direct.franceculture.fr/live/francemusique-hifi.aac", "cover":"France_Musique.jpg", "type": "radio"},
+    { "name" : "France Bleu Alsace", "file" : "http://direct.francebleu.fr/live/fbalsace-midfi.mp3", "cover":"France_Bleu.jpg", "type": "radio"},
+    { "name" : "France Musique Jazz", "file" : "http://icecast.radiofrance.fr/francemusiquelajazz-hifi.aac", "cover":"France_Musique.jpg", "type": "radio"}
+]

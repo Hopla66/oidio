@@ -2,6 +2,8 @@ import hashlib
 from mutagen.id3 import ID3
 from repository import dumpCover, existsCover, getTrackFile, isCoverUptodate
 
+import os
+
 def createId( artist:str, album:str='')->str:
   """ Creates a unique ID for an artist or for an album """
   res = hashlib.md5( (artist+album).encode()).hexdigest()
@@ -91,8 +93,10 @@ class Album(object):
         return
       filename = self.id+".jpg"
       if not existsCover(filename) or force:
-        path = self.tracks[0].file
-        img = ID3( getTrackFile(path)).getall("APIC")
+        path = getTrackFile(self.tracks[0].file)
+        if( os.path.exists(path) == False):
+           return
+        img = ID3( path).getall("APIC")
         if( img is None or len(img) == 0 or img[0] is None):
           return ""
         dumpCover( img[0].data, filename)

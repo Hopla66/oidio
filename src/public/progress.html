@@ -2,7 +2,10 @@
 
 <html lang="en">
     <head>
+        <script src="templates.js"></script>
+        <script src="timer.js"></script>
         <link href="css/oidio.css" rel="stylesheet">
+        <script src=https://cdnjs.cloudflare.com/ajax/libs/dot/1.1.3/doT.min.js></script>
 
         <style>
 
@@ -31,31 +34,45 @@
             }
          </style>
 
+
     </head>
-<body>
-    <script>
-        startPlaying = (duration,elapsed) => {
+
+    <body>
+        <script>
+
+         startPlaying = (duration,elapsed) => {
             p = document.querySelector('#played');
             width = Number(document.querySelector('#duration').offsetWidth);
             start = Math.round( (elapsed *width)/ duration)
             p.style.transitionDuration = (duration -elapsed)+'s';
             p.style.paddingLeft= start+"px";
             p.style.width =(width-start)+"px";
+
+            TIMER.start( duration, elapsed)
         }
         stopPlaying = () => {
             p = document.querySelector('#played');
             p.style.transitionDuration = '0s';
             p.style.width = p.style.paddingLeft = "0px";
+            TIMER.stop();
         }
         togglePlaying = () => {
             p = document.querySelector('#played').getAnimations().forEach( (a)=> {
-                    ( a.playState == 'running') ? a.pause() : a.play()}
-                )
+                    if ( a.playState == 'running') {
+                        a.pause(); TIMER.stop();
+                    } else {
+                         a.play(); TIMER.restart();
+                    }
+                })
         }
+
+
+
     </script>
 
+
     <div>
-        <button onclick="startPlaying(10, 2)">play</button>           
+        <button onclick="startPlaying(10, 0)">play</button>           
         <button onclick="stopPlaying()">stop</button>           
         <button onclick="togglePlaying()">pause</button>           
     </div>
@@ -64,6 +81,40 @@
         <div id="played"> </div>
         <div id="duration"></div>
     </div>
+    <div>
+        <br><br>time:
+        <span id="time">xxx</span>
+    </div>
+    <div id="template"></div>
+
+    <script>
+       TIMER = new Timer( document.querySelector('#time'));
+       TEMPLATES = new Template("templates.txt");
+       
+       var loop_data = { artist: "toto", album : "best of",
+                         tracks: [
+                            {title: "good good", sec: "360"},
+                            {title: "ok not bad", sec: "60"}
+                         ]};
+
+       var array_data =[{ artist: "toto", album : "best of", title: "good good", sec: "360"},
+                            {artist: "pipo", album : "bad of",title: "ok not bad", sec: "60"}
+                         ];
+
+
+  var album = {"cover":"dceabcda5911deaf856f55fd63ec0026.jpg","genre":"Tango","id":"dceabcda5911deaf856f55fd63ec0026","name":"Di Meola plays Piazzolla",
+                "tracks":[
+                    {"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 01 - Oblivion.mp3","length":"364","name":"Oblivion","tracknumber":"1","sec":"06:04"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 02 - Café 1930.mp3","length":"376","name":"Café 1930","tracknumber":"2","sec":"06:16"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 03 - Tango Suite Part I.mp3","length":"529","name":"Tango Suite Part I","tracknumber":"3","sec":"08:49"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 04 - Tango Suite Part III.mp3","length":"531","name":"Tango Suite Part III","tracknumber":"4","sec":"08:51"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 05 - Verano Reflections.mp3","length":"253","name":"Verano Reflections","tracknumber":"5","sec":"04:13"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 06 - Night Club 1960.mp3","length":"350","name":"Night Club 1960","tracknumber":"6","sec":"05:50"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 07 - Tango II.mp3","length":"335","name":"Tango II","tracknumber":"7","sec":"05:35"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 08 - Bordel 1900.mp3","length":"273","name":"Bordel 1900","tracknumber":"8","sec":"04:33"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 09 - Milonga Del Angel.mp3","length":"228","name":"Milonga Del Angel","tracknumber":"9","sec":"03:48"},{"file":"NAS/freebox/Al Di Meola/Di Meola plays Piazzolla/Al Di Meola - Di Meola plays Piazzolla - 10 - Last Tango For Astor.mp3","length":"378","name":"Last Tango For Astor","tracknumber":"10","sec":"06:18"}
+                ],
+                "year":"1996","length":3617,"sec":"01:00:17","idx":0,"artist":"Al Di Meola"
+              };                        
+       
+       
+       //TEMPLATES.injectParent( "t2", {cover : 'xxxx', idx : 10, name: 'dark side of the', year:1973}, document.querySelector("#template"));
+       TEMPLATES.injectParent( "t_table_loop", loop_data, document.querySelector("#template"));
+       //TEMPLATES.injectParent( "t_tracks", album, document.querySelector("#template"));
+       //TEMPLATES.injectParent( "t_array_loop", array_data, document.querySelector("#template"));
+    </script>
 
     </body>
 </html>

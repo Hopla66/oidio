@@ -64,6 +64,20 @@
 
 	</body>
 	<script>
+  
+  data = { 'pipo' : { 'val' : 'xxx'}}
+  replacer1 = (str, obj) => str.replace(/\${(.*?)}/g, (x,g)=> { 
+  console.log("-- "+g+ "  x="+ eval( "obj."+g))
+  return eval( "obj."+g)}
+  );
+  
+
+console.log("## test");
+console.log("## "+replacer1(" ${pipo.val}", data))
+
+  
+  
+  
 /*		
 history.pushState(null, document.title, location.href);
 
@@ -73,6 +87,14 @@ window.addEventListener('popstate', function (event)
  
   
 });	
+
+
+var replacer1 = function(tpl, data) {
+    return tpl.replace(/\$\(([^\)]+)?\)/g, function($1, $2) { return data[$2]; });
+}
+console.log("## test");
+console.log("## "+replacer1(" ${pipo}", { 'pipo' : 'bingo'}))
+
 		
 		// adds a css class to an HTML element		
 		const addClass = ( elt, add, className) => add ? elt.classList.add( className) : elt.classList.remove( className);

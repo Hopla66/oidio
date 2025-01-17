@@ -25,13 +25,16 @@ app.mount( "/public", StaticFiles(directory="public",html = True), name="public"
 mpd = Player(server="192.168.0.51", logger='uvicorn.error')
 artists = mpd.loadDb('mpd.json')
 
-mpd.connect()
+#mpd.connect()
 
 socket = Player(server="192.168.0.51", logger='uvicorn.error')
 
 @app.get("/")
-def read_index():
+async def read_index():
+    await mpd.connect()
     return FileResponse('public/index.html')
+
+
 
 @app.get("/artists/")
 def get_artists( filter:str|None=None):
@@ -40,18 +43,25 @@ def get_artists( filter:str|None=None):
 @app.get("/artist/{name}")
 def get_artist( name:str):
     artist = artists.get( name)
-    json = generateArtist( name)
+    json = jsons.dumps( artist, strip_properties=True, strip_privates=True)
     return Response(content=json, media_type='application/json')
 
-def generateArtist( name:str)->str:
-    artist = artists.get( name)
-    return jsons.dumps( artist, strip_properties=True, strip_privates=True)
+@app.get("/radios/")
+def get_radios( filter:str|None=None):
+    radios = mpd.getRadios()
+    json = jsons.dumps( radios, strip_properties=True, strip_privates=True)
+    return Response(content=json, media_type='application/json')
 
 @app.get("/status")
 async def get_status():
     s = await mpd.getStatus()
-    return s
+    json = jsons.dumps( s, strip_properties=True, strip_privates=True)
+    return Response(content=json, media_type='application/json')
 
+@app.get("/status/playlist")
+async def get_playlist():
+    p = await mpd.getPlaylist()
+    return p
 
 class PlayReq(BaseModel):
     song: str | None = None
@@ -72,12 +82,28 @@ async def play( req:PlayReq):
             album = artists.get( req.artist).getAlbum(req.album)
             tracks = []
             for track in album.tracks:
-                await tracks.append( track.file)
+                tracks.append( track.file)
             res = await mpd.playAlbum( tracks)
         except Exception as ex:
             logger.info(f'#### error :: {ex}')
     return res
+
+@app.post("/control/next")
+async def playNext():
+    try:
+        return await mpd.togglePlay()
+    except Exception as ex:
+        logger.info(f'#### error :: {ex}')
+        return { "status" : "NOK"}
     
+@app.post("/control/previous")
+async def playPrevious():
+    try:
+        return await mpd.togglePlay()
+    except Exception as ex:
+        logger.info(f'#### error :: {ex}')
+        return { "status" : "NOK"}
+
 @app.post("/control/play")
 async def togglePlay():
     try:
@@ -96,8 +122,9 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await socket.idle()
         #data = await socket.getStatus()
         #await asyncio.sleep(5)
-        logger.info(f'#### Websocket :: {data}')
-        await websocket.send_text(json.dumps(data))
+        json = jsons.dumps( data, strip_properties=True, strip_privates=True)
+        logger.info(f'#### Websocket :: {json}')
+        await websocket.send_text(json)
     
 
 

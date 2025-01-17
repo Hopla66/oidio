@@ -7,98 +7,48 @@
     <link href="public/css/fontawesome.css" rel="stylesheet" />
     <link href="public/css/solid.css" rel="stylesheet" />
     <link href="public/css/regular.css" rel="stylesheet" />
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/dot/1.1.3/doT.min.js></script>
+    <script src="public/templates.js"></script>
   </head>
   
   <script>
-    //run it first ( but it isn't executed before img src is executed :( )
+    //run it first 
     document.addEventListener("DOMContentLoaded", (e) => { 
-      TEMPLATES = Array.from( document.querySelectorAll(".template")).reduce( (dict, elt) => { dict[elt.id] = elt.innerHTML; return dict}, {});
-      document.querySelectorAll(".template").forEach( x => { x.parentNode.removeChild(x)})
+      TEMPLATES = new Template("public/templates.txt");
     });
   </script> 
+  <script type="text/javascript" src="public/utils.js"></script>
+  <script type="text/javascript" src="public/timer.js"></script>
 
-  <body onLoad="getStatus();getArtistList(); startWebSocket()">
+  <body onLoad="getStatus();getArtistList(); startWebSocket()"
+        onbeforeunload="stopWebSocket();">
     <div class="container">
       <div class="header" >
         <span>
-        <button class="action"><i class="fa-solid fa-backward-step fa-4x"></i></button>
+        <button class="action" onClick="playPrevious()"><i class="fa-solid fa-backward-step fa-4x"></i></button>
         <button id="play" class="action" onClick="togglePlay()"> <i class="fa-solid fa-pause  fa-4x"></i></button>
-        <button class="action"><i class="fa-solid fa-forward-step fa-4x"></i></button>
+        <button class="action" onClick="playNext()"><i class="fa-solid fa-forward-step fa-4x"></i></button>
         </span>
         <span id="info"></span>
-       </div>
+        <button onClick="togglePlaylist()">Playlist</button>
+      </div>
       <div class="left" >
         <ul id='artists'>
         </ul>      
       </div>
       <div class="content" >
+        <div id="playlist" class="hiddenWidget">
+        </div>
         <div id='artist'>
-          <h2 id="name"> </h2>
-          <div id="albums" class="albums"> </div>
-          <div id="album" class="album"></div>
         <div>
       </div>
     
     </div>
 
-    <div id="t_play_song" class="template">
-      <div style="display: inline-block;">
-        <span class="t1">${artist}</span><span class="t1">${album}</span>
-        <span class="t1">${title}</span>
-        <div style="position:relative">
-          <div id="played"   class='stopPlaying'> </div>
-          <div id="duration" class='playing'></div>
-        </div>
-      </div>
-    </div>
+  <script>
 
-    <div id="t_play_radio" class="template">
-      <span class="t1">Radio</span><span class="t1">${name}</span>
-    </div>
+      TIMER = new Timer( '#time', formatTime);
 
-    <div id="t_album" class="template">
-      <div  class="albumThumb">
-        <img src="static/${cover}" onclick="displayAlbum('${idx}')">
-        <h3>${name}</h3>
-        <div>${year}</div>
-      </div>
-    </div>
-
-    <div id="t_tracks" class="template">
-      <img src="static/${cover}" onclick="playAlbum('${artist}','${name}')">
-      <table id="tracks">
-        <thead>
-          <tr>
-            <th></th><th>${name}</th><th>${sec}</th>
-          </tr>
-          <tr id="t_track" class="template">
-            <td>${tracknumber}</td><td onclick="play('${file}')">${name}</td><td>${sec}</td>
-          </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-      </table>
-    </div>
-
-    <div id="t_artist_list"  class="template">
-      <li onclick="getArtist('${name}')">${name}</li>
-    </div>
-
-    
-    <script>
-      // adds a css class to an HTML element		
-      const addClass = ( elt, add, className) => add ? elt.classList.add( className) : elt.classList.remove( className);
-
-      const toggleIcon = (play) => { elt = document.querySelector('#play > i'); 
-                                   addClass( elt, play, 'fa-pause'); addClass( elt, !play, 'fa-play') }
-
-      inject = (str, obj) => str.replace(/\${(.*?)}/g, (x,g)=> { return obj[g]});
-      injectTemplate = (id, obj) => inject( TEMPLATES[id], obj)
-     
-      clear = (x) =>{ while ( x.firstChild) { x.removeChild( x.lastChild);}  }
-
-      formatTime = (s) => new Date(s * 1000).toISOString().slice(  (s > 3600 ? 11 : 14), 19)
 
       startPlaying = (duration,elapsed) => {
         p = document.querySelector('#played');
@@ -107,24 +57,18 @@
         p.style.transitionDuration = (duration -elapsed)+'s';
         p.style.paddingLeft= start+"px";
         p.style.width =(width-start)+"px";
+        TIMER.start( duration, elapsed);
       }
       stopPlaying = () => {
         p = document.querySelector('#played');
-        p.style.transitionDuration = '0s';
-        p.style.width = p.style.paddingLeft = "0px";
-      }
-      togglePlaying = () => {
-        p = document.querySelector('#played');
-        p && p.getAnimations().forEach( (a)=> {
-                ( a.playState == 'running') ? a.pause() : a.play()}
-            )
+        p && p.getAnimations().forEach( (a)=> {a.pause()})
+        TIMER.stop();
       }
 
       ARTIST = {}
-
+  
       function storeArtist( artist) {
-        defaultYear = (y) => (y === undefined || y =='') ? 9999 : +y 
-        filterChars = (str) => str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+        defaultYear = (y) => (y === undefined || y =='') ? 9999 : +y;
 
         artist.albums.sort( (x,y) => defaultYear(x.year) - defaultYear(y.year))
         artist.albums.forEach( (album,i) => {
@@ -140,84 +84,80 @@
         ARTIST = artist
       }
 
-      function displayAlbum( idx) {
-        al = document.querySelector( '#album');
-        clear(al)
-
-        t = injectTemplate( "t_tracks", ARTIST.albums[idx])
-        al.insertAdjacentHTML('beforeend', t)
-
-        table = al.querySelector( '#tracks');
-        ARTIST.albums[idx].tracks.forEach( (t) => {
-          row = injectTemplate( "t_track", t)
-          table.querySelector( 'tbody').insertAdjacentHTML('beforeend', row)
-        })
+      showPlaylist = () => {
+        showElement( document.querySelector( '#artist'), false)
+        showElement( document.querySelector("#playlist"), true)   
+      }
+      hidePlaylist = () => {
+        showElement( document.querySelector( '#artist'), true)
+        showElement( document.querySelector("#playlist"), false)   
       }
 
+
+      function displayAlbum( idx) {
+        TEMPLATES.injectParent( "t_tracks", ARTIST.albums[idx], document.querySelector( '#album'))
+      }
+
+
       function displayArtists( list) {
-        ul = document.querySelector( '#artists');
-        list.forEach( a => {
-          t = injectTemplate("t_artist_list", {name : a})
-          ul.insertAdjacentHTML('beforeend', t)
-        })
+        var artists = list.map( a => { return {name : a, query : filterChars(a)}})
+        TEMPLATES.injectParent("t_artist_list", artists, document.querySelector( '#artists'))
       }
 
       function displayStatus( status) {
         console.log(" Status ::" + JSON.stringify(status))
         toggleIcon(status.state == 'play')
-        info = document.querySelector( '#info');
-        if (status.state == 'stop') {
+ 
+        templateName = ( status.currentSong.type == 'track') ? "t_play_song" : "t_play_radio";
+        if( status.state == 'stop') {
           return;
         }
-        if( status.state == 'pause') {
-          togglePlaying();
+        TEMPLATES.injectParent( templateName, status.currentSong, document.querySelector( '#info'));
+        if( status.currentSong.type == 'track') {
+          startPlaying( Number(status.currentSong.length), Number(status.currentSong.elapsed));
+          if( status.state != 'play') {
+            stopPlaying();
+          }        
         }
-        clear( info);
-
-        t = ( status.type == 'track') ? injectTemplate( "t_play_song", status.currentSong)
-                                      : injectTemplate( "t_play_radio", status.currentSong);
-        info.insertAdjacentHTML('beforeend', t)
-        if( status.type == 'track') {
-          console.log(" duration="+status.currentSong.time+"  elapsed="+status.currentSong.elapsed)
-          startPlaying( status.currentSong.time, status.currentSong.elapsed)
-        }
+     
       }
 
       function displayArtist( artist) {
-          f = document.querySelector( '#artist');
-          f.querySelector( '#name').innerHTML = artist.name
-          al = f.querySelector( '#albums')
-          clear( al)
-          clear( f.querySelector( '#album'))
-          artist.albums.forEach( (a) => {
-            	row = injectTemplate("t_album", a)
-              al.insertAdjacentHTML('beforeend', row)
-          })
-          if( artist.albums.length == 1)
-            displayAlbum( 0)
+        hidePlaylist();
+        template = ( artist.name == 'RADIOS') ? "t_radio" : "t_artist"
+        TEMPLATES.injectParent( template, artist, document.querySelector( '#artist')); 
+
+        if( artist.name != 'RADIOS' && artist.albums.length == 1)
+          displayAlbum( 0)
       }
 
-      async function callServer(url, params ) {
-        console.log(`request [${params.method}] ${url} ...`);
+      function displayPlaylist( pl) {
+        console.log('playlist ::'+JSON.stringify(pl))
+        pl.forEach( (t,i,x) => { t.sec = formatTime( t.length) });
+        TEMPLATES.injectParent( "t_playlist", pl, document.querySelector( '#playlist'))
 
-        const response = await fetch (url, params);
-        if( !response.ok) {
-          const text = await response.text();
-          throw new Error ( `Unable to fetch response for ${url} : ${response.status} - ${text}`);
-        }
-        return response.json();
-      }  
-      
-      getRequest = (url) => callServer( url, { method: "GET"})
-      postRequest = (url, params) => callServer( url, { body: params, method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" } })
+        pl.forEach( (t,i,x) => {
+          if( t.current ) {
+            row = document.querySelector('#pl tbody tr:nth-of-type('+ (i+1)+')');
+            addClass( row, true, 'currentSong')
+          }
+        })
+        showPlaylist()
+      }
+
+
+      function getRadioList() {
+        getRequest('/radios')
+        .then( data => { console.log("#radios "+JSON.stringify(data));   displayArtist( data)})
+      }
 
       function getStatus() {
-        getRequest('/status')
-        .then( data => {
-          displayStatus( data)
-        })
+        getRequest('/status').then( data => { displayStatus( data) })
       }
+
       function getArtist(name) {
+        console.log('getArtist')
+        console.log(' ::'+name)
         getRequest('artist/'+name)
         .then( data => {
             storeArtist( data)
@@ -226,15 +166,12 @@
       }
 
       function getArtistList() {
-        getRequest('/artists')
-        .then( data => {
-            displayArtists( data.artists)
-        })
+        getRequest('/artists').then( data => { displayArtists( data.artists) })
       }
 
-      function togglePlay() {
-        postRequest( 'control/play',  '')
-      }
+      function playPrevious() { postRequest( 'control/previous', '')}
+      function playNext() { postRequest( 'control/next', '')}
+      function togglePlay() { postRequest( 'control/play',  '')}
 
       function play( file) {
         postRequest( 'play/',  JSON.stringify({ song: file}))
@@ -244,9 +181,23 @@
         postRequest( 'play/',  JSON.stringify({ "artist": artist, "album": album}))
       }
 
+      function togglePlaylist() {
+        if( !isVisible( document.querySelector("#playlist"))) {
+          getRequest('/status/playlist')
+          .then( data => {
+            displayPlaylist( data)
+          })
+        } else {
+          hidePlaylist()
+        }
+      }
+
+
+      var ws;
+
       function startWebSocket() {
 
-        var ws = new WebSocket("ws://localhost:8000/ws");
+        ws = new WebSocket("ws://localhost:8000/ws");
         ws.onmessage = function(event) {
           console.log('received ...'+event.data)
           displayStatus( JSON.parse( event.data))
@@ -260,6 +211,9 @@
         //ws.send('status')
       }
 
+      function stopWebSocket() {
+        ws.close();
+      }
 
      </script>
 

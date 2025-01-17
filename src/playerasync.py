@@ -1,11 +1,14 @@
 import asyncio
 
 from mpd.asyncio import MPDClient
-
+from radios import RADIOS
+from music import Music
 
 from model import *
 import os
 import logging
+
+import json
 
 REPO = "/Users/Laurent/Python/data/mpd"
 
@@ -34,9 +37,12 @@ class Player(object):
         return self.client.mpd_version
     
     async def togglePlay( self):
+        self.log( 'togglePlay ... ')
         await self.client.pause()
     
     def getType( self, song):
+        if( bool( song) == False):
+            return ''
         if 'album' in song:
             return 'track'
         else:
@@ -46,21 +52,48 @@ class Player(object):
     async def getStatus( self):
         self.log( 'getStatus ... ')
         await self.ping()
-        song = await self.client.currentsong()
+        current = await self.client.currentsong()
         status = await self.client.status()
-        if status['state'] != 'stop':
-            song['duration'] = status['time']
-            song['elapsed'] = status['elapsed']
+
+        params = { 'song' :current, 'status' : status}
+        self.log( "getStatus :: "+ json.dumps(params))
+
+        m = Music( params)
         res = {
-            "type" : self.getType( song),
-            "currentSong" : song,
+            "currentSong" : m,
             "state" : status['state'],
             "volume" : status['volume'],
             "repeat" : status['repeat'],
             "random" : status['random']
         }
+        self.log( "## done ")
         #self.log( 'getStatus = '+json.dumps(res))
         return res
+    
+    async def getPlaylist( self):
+        self.log('getPlaylist ...')
+        pl = await self.client.playlistinfo()
+        current = await self.client.currentsong()
+        res = []
+        for song in pl:
+            self.log('getPlaylist '+json.dumps(song))
+
+            m = Music( { 'current' :current, 'song' : song})
+
+            #elt = self.getPlaylistElt( song, current)
+            res.append( m)
+        return res
+    
+    def getPlaylistElt( self, song, current):
+        if self.getType(song) == 'song':
+            elt = { "artist" : song['artist'], "album" : song['album'], "title" : song['title'],
+                    "length" :  song['time'],  "current" : bool(current) and (current['title'] == song['title'])
+                  }
+        else:
+            elt = { "artist" : "Radio", "album" : "", "title" : RADIOS.getName( song['file']),
+                    "length" : 0, "current" : bool(current) and (current['file'] == song['file'])
+                   }
+        return elt
 
     async def idle( self):
         async for subsystem in self.client.idle(['player']):
@@ -104,6 +137,7 @@ class Player(object):
             await self.client.connect( self.server, self.port)      
         except Exception as inst:
             self.log("## reconnect err")
+            
     def dumpDb( self, fname:str):
         self.ping()
         l = self.client.listallinfo()
@@ -127,6 +161,9 @@ class Player(object):
         tags = eval(l) 
         track = self.artists.addTrackFromDict( tags)
         return track
+    
+    def getRadios( self):
+        return RADIOS.getList()
     
     def log( self, msg:str):
         if self.logger is not None:

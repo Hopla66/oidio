@@ -5,8 +5,6 @@ html {
   font-family : Roboto, sans-serif;
 }
 
-
-
 .container {
   display: grid;
   grid-template-columns: 20rem 1fr;
@@ -39,9 +37,7 @@ ul {
   overflow-y : scroll;
   height:600px;
 }
-#artist {
-  display:block;
-}
+
 
 h2 {
   font-size: 18px;
@@ -61,6 +57,7 @@ h3 {
   font-weight: bold;
   color : red;
 }
+
 .albums  {
     display: flex;
     margin-bottom: 30px;
@@ -71,7 +68,17 @@ h3 {
   margin-left: 10px;
 }
 
-.albumThumb  > img{
+.radios  {
+  margin-bottom: 30px;
+  overflow-x : auto;
+  width: 1400px;
+}
+.radioThumb {
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.thumb {
   width: 150px;
 }
 .album {
@@ -122,6 +129,11 @@ h3 {
   background-color: green;
   position: absolute;
   z-index: 1
+}
+
+.currentSong {
+  font-weight: bold;
+  background-color: green;
 }
 
 .hiddenWidget { display:none}
