@@ -164,6 +164,17 @@ class Artist(object):
 class Artists(dict):
   """ Store of all Artists with their Albums and Tracks."""
 
+  def __init__(self, folder:str, file:str='artists.json'):
+    self.config_file = os.path.join( folder, file)
+
+  def load( self):
+    with open( os.path.join( self.config_file), "r", encoding="utf-8") as file:
+      l = file.readline()
+      while l :
+        self.addTrackFromDict( eval(l))
+        l = file.readline()
+      file.close()
+
   def add( self, a:Artist):
     """ Adds an Artist to the store, if it doesn't exist yet"""
     self.update( {a.name: a})

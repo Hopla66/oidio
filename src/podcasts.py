@@ -3,6 +3,7 @@ from model import *
 import json
 import datetime
 import requests
+import os
 
 
 class Podcasts(Artists):
@@ -11,10 +12,13 @@ class Podcasts(Artists):
   URL = "https://openapi.radiofrance.fr/v1/graphql"
   KEY = ""
   
-  def __init__( self, file:str='./public/radios.json', rfKey:str='rfApi.txt'):
-    Podcasts.__getRfApiKey( rfKey)
-    #load and cache the podcasts
-    with open( file, encoding='utf-8') as json_data:
+  def __init__( self, folder:str, file:str='radios.json', rfKey:str='rfApi.txt'):
+    self.config_file = os.path.join( folder, file)
+    Podcasts.__getRfApiKey( os.path.join( folder, rfKey))
+
+  
+  def load( self):  #load and cache the podcasts
+    with open( self.config_file, encoding='utf-8') as json_data:
       list = filter( lambda x : x['type'] == 'podcast',json.load(json_data))
       for r in list:
         self.load_podcast( r)
