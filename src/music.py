@@ -1,5 +1,4 @@
-from radios import RADIOS
-import jsons
+from radios import Radios
 
 # uvicorn main:app --reload
 """
@@ -18,7 +17,8 @@ data1 =   {"song": {"file": "http://icecast.radiofrance.fr/fipjazz-hifi.aac", "n
 class Music(object):
     """ Music element from mpd. """
     
-    def __init__( self, mpdDef:dict):
+    def __init__( self, mpdDef:dict, radios:Radios):
+        self.radios = radios
         self.type = ""
         self.artist = ""
         self.album = ""
@@ -28,20 +28,20 @@ class Music(object):
 
         self.current = False
 
-        self.__setType( mpdDef['song'])
-        if( self.isRadio()):
-            self.__initRadio( mpdDef['song'])
-        elif ( self.isSong()):
-            self.__initSong( mpdDef['song'])
+        self.__set_type( mpdDef['song'])
+        if( self.is_radio()):
+            self.__init_radio( mpdDef['song'])
+        elif ( self.is_song()):
+            self.__init_song( mpdDef['song'])
 
 
-        if( self.__isStatus(mpdDef)):
-            self.__setPlayStatus( mpdDef['status'])
+        if( self.__is_status(mpdDef)):
+            self.__set_play_status( mpdDef['status'])
         else:
             self.current = ( self.file == mpdDef['current']['file'])
     
 
-    def __setType( self, song:dict):
+    def __set_type( self, song:dict):
         if( bool(song) == False):
             return
         if 'album' in song:
@@ -49,36 +49,32 @@ class Music(object):
         else:
             self.type = 'radio'
 
-    def __setPlayStatus( self, status):
+    def __set_play_status( self, status):
         if status['state'] != 'stop':
             time = status['time'].split(":") # <elapsed>:<length>
             self.length = time[1] 
             self.elapsed = time[0]        
 
-    def __initSong( self, mpdDef):
+    def __init_song( self, mpdDef):
         self.artist = mpdDef['artist']
         self.album = mpdDef['album']
         self.title = mpdDef['title']
         self.length = mpdDef['time']
         self.file = mpdDef['file']
 
-    def __initRadio( self, mpdDef):
+    def __init_radio( self, mpdDef):
         self.artist = 'RADIOS'
-        self.title = RADIOS.getName( mpdDef['file'])
+        self.title = self.radios.get_name( mpdDef['file'])
         self.file = mpdDef['file']
 
-
-
-
-
-    def isRadio( self):
+    def is_radio( self):
         return self.type == 'radio'
     
-    def isSong( self):
+    def is_song( self):
         return self.type == 'track'
 
         
-    def __isStatus( self, item:dict):
+    def __is_status( self, item:dict):
         return ('status' in item)
     
 """

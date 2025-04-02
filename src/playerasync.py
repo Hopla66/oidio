@@ -1,7 +1,9 @@
 import asyncio
 
 from mpd.asyncio import MPDClient
-from radios import RADIOS
+
+from config_loader import Config
+from radios import Radios
 from music import Music
 
 from model import *
@@ -16,18 +18,19 @@ REPO = "/Users/Laurent/Python/data/mpd"
 class Player(object):
     """ Interacts with mpd. """
     
-    def __init__( self, server:str="localhost", port:str="6600", logger:str=''):
+    def __init__( self, config:Config, logger:str=''):
         self.client = MPDClient()               # create client object
         self.client.timeout = 10                # network timeout in seconds (floats allowed), default: None
         self.client.idletimeout = None          # timeout for fetching the result of the idle command is handled seperately, default: None
-        self.server = server
-        self.port = port
+        self.server = config.get_MPD_server()
+        self.port = config.get_MPD_port()
         #await self.client.connect( server, port)      # connect to localhost:6600
         self.artists = Artists()
         if logger != '':
           self.logger = logging.getLogger( logger)
         else:
           self.logger = None
+        self.radios = Radios( config.get_radio_list())
 
     def stop( self):
         self.client.close()                     # send the close command
@@ -58,7 +61,7 @@ class Player(object):
         params = { 'song' :current, 'status' : status}
         self.log( "getStatus :: "+ json.dumps(params))
 
-        m = Music( params)
+        m = Music( params, self.radios)
         res = {
             "currentSong" : m,
             "state" : status['state'],
@@ -90,7 +93,7 @@ class Player(object):
                     "length" :  song['time'],  "current" : bool(current) and (current['title'] == song['title'])
                   }
         else:
-            elt = { "artist" : "Radio", "album" : "", "title" : RADIOS.getName( song['file']),
+            elt = { "artist" : "Radio", "album" : "", "title" : self.radios.getName( song['file']),
                     "length" : 0, "current" : bool(current) and (current['file'] == song['file'])
                    }
         return elt
@@ -163,7 +166,7 @@ class Player(object):
         return track
     
     def getRadios( self):
-        return RADIOS.getList()
+        return self.radios.getList()
     
     def log( self, msg:str):
         if self.logger is not None:

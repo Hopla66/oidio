@@ -50,21 +50,25 @@ class Album(object):
     self.genre = genre
     self._artist = artist
     self.cover = ""
-    if tracks is None:
+    self.folder = ""
+    if tracks is None or len(tracks) == 0:
       self.tracks = []
     else:
       self.tracks = tracks
+      self.folder = os.path.dirname( tracks[0].file)
     self.id = createId( name)
 
   def addTrack( self, track:Track)->Track:
     """ Adds a Track to this Album, if the Track doesn't exist yet"""
     t = self.getTrack( track.name)
     if t is None:
-      t = track
-    self.tracks.append(t)
-    t.album = self
-    self.writeCoverArt()
-    return t
+      self.tracks.append(track)
+      track.album = self
+      self.folder =os.path.dirname( track.file)
+      self.writeCoverArt()
+      return track
+    else:
+      return t
 
   def getTrack( self, trackName:str)->Track:
     for t in self.tracks:
@@ -81,8 +85,6 @@ class Album(object):
       self.writeCoverArt()
     if isCoverUptodate( self.cover, self.tracks[0].file) == False:
       self.writeCoverArt()
-
-    
 
   def writeCoverArt( self, force:bool=False):
       """ Creates a cover art file for this album if the cover art is not yet defined.
@@ -101,7 +103,7 @@ class Album(object):
           return ""
         dumpCover( img[0].data, filename)
       self.cover = filename
-    
+
   def list( self):
     print( "  - Album: {0} - {1} genre {2}".format( self.name, self.year, self.genre)) 
     for t in self.tracks:

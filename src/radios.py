@@ -1,17 +1,12 @@
 import json
-from pprint import pprint
-
 
 from model import *
-
-import json
-from pprint import pprint
 
 class Radios(Artists):
     """ A radio is a track of a fake Album of a fake Artist named 'RADIOS' """
     def __init__( self, file:str='./public/radios.json'):
         with open( file) as json_data:
-            list = json.load(json_data)
+            list = filter( lambda x : x['type'] == 'radio',json.load(json_data))
             for r in list:
                 radio = self.addTrack( r['file'], r['name'], 1, 0, 'RADIOS', r['name'], 0, '')
                 radio.album.cover = r['cover']
@@ -20,10 +15,10 @@ class Radios(Artists):
  #    { "name" : "Fip", "file" : "http://direct.fipradio.fr/live/fip-hifi.aac", "cover":"FIP.jpg", "type": "radio"},
             
 
-    def getList( self):
-        return self.get('RADIOS')
+    def get_list( self):
+        return self.get('RADIOS').albums
 
-    def getRadio( self, filename:str)->Track|None:
+    def get_radio( self, filename:str)->Track|None:
         radioList = self.get('RADIOS').albums
         for r in radioList:
             if( r.tracks[0].file == filename):
@@ -31,20 +26,20 @@ class Radios(Artists):
         return None
 
 
-    def getName( self, filename:str):
-        radio = self.getRadio( filename)
+    def get_name( self, filename:str):
+        radio = self.get_radio( filename)
         if ( radio == None):
             return ""
         else:
             return radio.name
 
 
-    def getCover( self, filename:str):
-        radio = self.getRadio( filename)
+    def get_cover( self, filename:str):
+        radio = self.get_radio( filename)
         if ( radio == None):
             return ""
         else:
             return radio.album.cover
 
         
-RADIOS = Radios()
+#RADIOS = Radios()

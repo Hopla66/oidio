@@ -9,5 +9,8 @@
     { "name" : "France Culture", "file" : "http://direct.franceculture.fr/live/franceculture-hifi.aac", "cover":"France_Culture.jpg", "type": "radio"},
     { "name" : "France Musique", "file" : "http://direct.franceculture.fr/live/francemusique-hifi.aac", "cover":"France_Musique.jpg", "type": "radio"},
     { "name" : "France Bleu Alsace", "file" : "http://direct.francebleu.fr/live/fbalsace-midfi.mp3", "cover":"France_Bleu.jpg", "type": "radio"},
-    { "name" : "France Musique Jazz", "file" : "http://icecast.radiofrance.fr/francemusiquelajazz-hifi.aac", "cover":"France_Musique.jpg", "type": "radio"}
+    { "name" : "France Musique Jazz", "file" : "http://icecast.radiofrance.fr/francemusiquelajazz-hifi.aac", "cover":"France_Musique.jpg", "type": "radio"},
+    { "name" : "Jazz à FIP", "file" : "https://www.radiofrance.fr/fip/podcasts/club-jazzafip", "cover":"club-jazzafip.webp", "type": "podcast"},
+    { "name" : "Banzzai", "file" : "https://www.radiofrance.fr/francemusique/podcasts/banzzai", "cover":"banzzai.webp", "type": "podcast"},
+    { "name" : "Deep Search", "file" : "https://www.radiofrance.fr/fip/podcasts/deep-search-par-laurent-garnier", "cover":"deepsearch.webp", "type": "podcast"}
 ]
