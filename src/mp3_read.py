@@ -14,7 +14,7 @@ MUSIC_REPO = "G:\MUSIK\Music"
 #
 def addTrackFromTags( repo:Artists, song)->Track:
     tags = Tags( song)
-    track = repo.addTrack( song, tags.getTag('title'), tags.getTag('tracknumber'), tags.getTag('length'),
+    track = repo.add_track( song, tags.getTag('title'), tags.getTag('tracknumber'), tags.getTag('length'),
                            tags.getTag('artist'), tags.getTag('album'), tags.getTag('date'), tags.getTag('genre'))
     if track.album == None:
       print( track.name +" has no album ::"+tags.getTag('album')+" :: "+track.album.name)

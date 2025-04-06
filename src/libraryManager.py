@@ -24,10 +24,10 @@ class MPDAdmin(object):
         except Exception as inst:
             print("## connect err")
 
-    def dumpDb( self, fname:str):
+    def dump_db( self):
         self.ping()
         l = self.client.listallinfo()
-        with open( os.path.join( self.config.get_app_data(), fname), "w", encoding="utf-8") as file:
+        with open(  self.config.get_music_db(), "w", encoding="utf-8") as file:
             for s in l:
                 print(s)
                 if s.get("file") != None:
@@ -61,8 +61,8 @@ class MPDAdmin(object):
 class LibraryScanner(object):
     def __init__( self, config:Config):
         self.library = config.get_music_repository()
-        self.mount_point = config.get_music_mount()
         self.last_scan_file = os.path.join( config.get_app_data(), "lastScan.txt")
+        self.config= config
 
     def __get_last_scan( self):
         try :
@@ -77,7 +77,6 @@ class LibraryScanner(object):
         file.close()
 #NAS/MUSIK/Tord Gustavsen Trio/Opening/Tord Gustavsen Trio - Opening - 01 - The Circle.mp3'
 #/media/laurent/data/MUSIK/Music/Tord Gustavsen Trio      
-# .replace( self.library, self.mount_point)  
     def __has_changes( self, folder, scan_from):
         changed = [f.path for f in os.scandir(folder) if f.is_dir() and datetime.fromtimestamp( f.stat().st_mtime) > scan_from]
         return len( changed) > 0
@@ -86,35 +85,31 @@ class LibraryScanner(object):
         if scan_from == None:
             scan_from = self.__get_last_scan()
         print( f"find all folders changed after {scan_from} in dir {self.library}: ")
-        artists = [f.path for f in os.scandir(self.library) if f.is_dir() and (datetime.fromtimestamp( f.stat().st_mtime) > scan_from or self.__has_changes( f.path, scan_from))]
-        print( f"artists : {artists}")
-        """        
-        folders = []
-        for artist in artists:
-            albums = [f.path for f in os.scandir(artist) if f.is_dir() and datetime.fromtimestamp( f.stat().st_mtime) > scan_from]
-            if len( albums) == 0:
-                folders.append( artist)
-            else:
-                folders.extend( albums)
-        """
-        folders = artists
+        folders = [f.path for f in os.scandir(self.library) if f.is_dir() and (datetime.fromtimestamp( f.stat().st_mtime) > scan_from or self.__has_changes( f.path, scan_from))]
         print( f" folders : {folders}")
         return folders
     
     def update_library( self, scan_from:datetime):
         folders = self.scan(scan_from)
-        mpd = MPDAdmin( Config())
+        mpd = MPDAdmin( self.config)
         mpd.connect()
         for folder in folders:
-            repo_folder = folder.replace( self.library, self.mount_point)
+            repo_folder = folder.replace( self.library, self.config.get_music_mount())
             print( f"update {repo_folder}")
             mpd.update( repo_folder)
         mpd.stop()
         self.__set_last_scan()
+        return folders
 
-    def dump_db( self, fname:str):
-        mpd = MPDAdmin( Config())
-        mpd.dumpDb( fname)
+    def dump_db( self):
+        mpd = MPDAdmin( self.config)
+        mpd.dump_db()
+
+    def update_cover_art( self, folders):
+        artists = Artists()
+        artists.load( self.config.get_music_db(), folders)
+        artists.update_cover_art()
+        
 
 
 def get_arg_date( args):
@@ -126,8 +121,10 @@ def get_arg_date( args):
 if __name__ == '__main__':
     args = sys.argv[1:]
     scan_arg = get_arg_date( args)
-    scanner = LibraryScanner( Config())
-    scanner.update_library( scan_arg)
+    config = Config()
+    scanner = LibraryScanner( config)
+#    scanner.update_library( scan_arg)
+    scanner.dump_db()
 
 
 #scanner.check_mpd()

@@ -111,6 +111,18 @@ class Player(object):
         except Exception as inst:
             await self.connect()
 
+    async def seek( self, secs):
+        await self.client.seekcur( secs)
+        return await self.getStatus()
+    
+    async def playNext( self):
+        await self.client.next()
+        return await self.getStatus()
+ 
+    async def playPrevious( self):
+        await self.client.previous()
+        return await self.getStatus()        
+
     async def playAlbum( self, tracks:list[str], volume:int=None, repeat:int=0):
         self.setPlayParams( volume, repeat)
         await self.client.clear()
@@ -162,7 +174,7 @@ class Player(object):
 
     def addTrackFromTags( self, l:str)->Track:
         tags = eval(l) 
-        track = self.artists.addTrackFromDict( tags)
+        track = self.artists.add_track_from_dict( tags)
         return track
     
     def getRadios( self):

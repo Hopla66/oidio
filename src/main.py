@@ -38,7 +38,7 @@ async def read_index():
 
 @app.get("/artists/")
 def get_artists( filter:str|None=None):
-    return {"artists" : artists.getArtists(filter) }
+    return {"artists" : artists.get_artists(filter) }
 
 @app.get("/artist/{name}")
 def get_artist( name:str):
@@ -88,10 +88,23 @@ async def play( req:PlayReq):
             logger.info(f'#### error :: {ex}')
     return res
 
+class SeekReq(BaseModel):
+    secs: str
+
+@app.post("/control/seek")
+async def seek( req:SeekReq):
+    res = { "status" : "NOK"}
+    logger.info( f'seek current song to {req.secs}s ...')
+    try:
+        res = await mpd.seek( req.secs)
+    except Exception as ex:
+            logger.info(f'#### error :: {ex}')
+    return res
+
 @app.post("/control/next")
 async def playNext():
     try:
-        return await mpd.togglePlay()
+        return await mpd.playNext()
     except Exception as ex:
         logger.info(f'#### error :: {ex}')
         return { "status" : "NOK"}
@@ -99,7 +112,7 @@ async def playNext():
 @app.post("/control/previous")
 async def playPrevious():
     try:
-        return await mpd.togglePlay()
+        return await mpd.playPrevious()
     except Exception as ex:
         logger.info(f'#### error :: {ex}')
         return { "status" : "NOK"}

@@ -11,9 +11,9 @@ class OidioController():
 
     def __init__( self, config:Config):
         self.mpd = Player( config)
-        self.artists = Artists( config.get_app_data())
-        self.radios = Radios( config.get_app_data())
-        self.podcasts = Podcasts( config.get_app_data())  
+        self.artists = Artists( config.get_music_db())
+        self.radios = Radios( config.get_radio_list())
+        self.podcasts = Podcasts( config.get_radio_list(), config.get_rf_key())  
 
     def load_repo( self):
         self.artists.load()
@@ -23,11 +23,11 @@ class OidioController():
     def connect( self):
         self.mpd.connect()
 
-    def get_artists(self, filter:str):
+    def get_artists(self, filter:str|None):
         return self.artists.get_artists(filter)
 
     def get_artist(self, name:str):
-        artist = self.artists.get(name)
+        artist = self.artists.get_artists(name)
         return jsons.dumps( artist, strip_properties=True, strip_privates=True)
 
     def get_radios( self, filter:str):
@@ -45,3 +45,24 @@ class OidioController():
     async def get_playlist( self):
         playlist = await self.mpd.get_playlist()
         return playlist
+    
+    async def play( self, fname:str, volume:int=None, repeat:int=0):
+        res = await self.mpd.play( fname, volume, repeat)
+        return res
+    
+    async def seek( self, secs):
+        res = await self.mpd.seek( secs)
+        return res
+     
+    async def play_next( self):
+        res = await self.mpd.playNext()
+        return res
+ 
+    async def play_previous( self):
+        res = await self.mpd.playPrevious()
+        return res       
+
+    async def play_album( self, tracks:list[str], volume:int=None, repeat:int=0):
+        res = await self.mpd.playAlbum( tracks, volume, repeat)
+        return res
+

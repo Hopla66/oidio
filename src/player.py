@@ -123,7 +123,7 @@ class Player(object):
 
     def addTrackFromTags( self, l:str)->Track:
         tags = eval(l) 
-        track = self.artists.addTrackFromDict( tags)
+        track = self.artists.add_track_from_dict( tags)
         return track
     
     def log( self, msg:str):

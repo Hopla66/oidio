@@ -12,9 +12,9 @@ class Podcasts(Artists):
   URL = "https://openapi.radiofrance.fr/v1/graphql"
   KEY = ""
   
-  def __init__( self, folder:str, file:str='radios.json', rfKey:str='rfApi.txt'):
-    self.config_file = os.path.join( folder, file)
-    Podcasts.__getRfApiKey( os.path.join( folder, rfKey))
+  def __init__( self, file:str='radios.json', rfKey:str='rfApi.txt'):
+    self.config_file = file
+    Podcasts.__getRfApiKey( rfKey)
 
   
   def load( self):  #load and cache the podcasts
@@ -42,13 +42,13 @@ class Podcasts(Artists):
         title = podcast['node']['podcastEpisode']['title']
         url = podcast['node']['podcastEpisode']['url']
         podcastDate = datetime.datetime.fromtimestamp( int(podcast['node']['published_date'])).strftime('%Y-%m-%d')
-        t = self.addTrack( url, title, i, 0, 'Podcast', metadata['name'], '', '')
+        t = self.add_track( url, title, i, 0, 'Podcast', metadata['name'], '', '')
         t.cover = metadata['cover']
         t.album.cover = t.cover
         
   def get_podcast( self, name:str)->Album:
     """ Retrives the episodes of a given Podcast """
-    return self.get_list().getAlbum( name)
+    return self.get_list().get_album( name)
         
   def get_list( self)->Artist:
     """ Returns the list of all the Podcasts """    

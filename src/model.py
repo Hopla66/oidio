@@ -4,7 +4,7 @@ from repository import dumpCover, existsCover, getTrackFile, isCoverUptodate
 
 import os
 
-def createId( artist:str, album:str='')->str:
+def create_ID( artist:str, album:str='')->str:
   """ Creates a unique ID for an artist or for an album """
   res = hashlib.md5( (artist+album).encode()).hexdigest()
   return res
@@ -56,9 +56,9 @@ class Album(object):
     else:
       self.tracks = tracks
       self.folder = os.path.dirname( tracks[0].file)
-    self.id = createId( name)
+    self.id = create_ID( name)
 
-  def addTrack( self, track:Track)->Track:
+  def add_track( self, track:Track)->Track:
     """ Adds a Track to this Album, if the Track doesn't exist yet"""
     t = self.getTrack( track.name)
     if t is None:
@@ -116,7 +116,7 @@ class Album(object):
   @artist.setter
   def artist(self,value:Artist):
     self._artist = value
-    self.id = createId( value.name, self.name)
+    self.id = create_ID( value.name, self.name)
 
 
   def __str__(self):
@@ -131,17 +131,17 @@ class Artist(object):
     else:
       self.albums = albums
     self.name = name
-    self.id = createId( name)
+    self.id = create_ID( name)
 
-  def addAlbum( self, album:Album)->Album:
-    a = self.getAlbum(album.name)
+  def add_album( self, album:Album)->Album:
+    a = self.get_album(album.name)
     if a is None:
       a = album
       self.albums.append( a)
       a.artist = self
     return a
   
-  def getAlbum( self, albumName:str)->Album:
+  def get_album( self, albumName:str)->Album:
     for a in self.albums:
       if a.name == albumName:
         return a
@@ -164,14 +164,16 @@ class Artist(object):
 class Artists(dict):
   """ Store of all Artists with their Albums and Tracks."""
 
-  def __init__(self, folder:str, file:str='artists.json'):
-    self.config_file = os.path.join( folder, file)
+  def __init__(self, file:str='artists.json'):
+    self.config_file = file
 
-  def load( self):
-    with open( os.path.join( self.config_file), "r", encoding="utf-8") as file:
+  def load( self, folders:list[str]=None):
+    with open( self.config_file, "r", encoding="utf-8") as file:
       l = file.readline()
       while l :
-        self.addTrackFromDict( eval(l))
+        track = eval(l)
+        if track.get("file") != None:    
+          self.add_track_from_dict( track)
         l = file.readline()
       file.close()
 
@@ -179,7 +181,7 @@ class Artists(dict):
     """ Adds an Artist to the store, if it doesn't exist yet"""
     self.update( {a.name: a})
 
-  def addArtist( self, name:str):
+  def add_artist( self, name:str):
     """ Creates a new Artist and adds it to the store if it doesn't exist yet. Returns the Artist."""
     item:Artist = self.get(name) 
     if( item is None):
@@ -189,26 +191,26 @@ class Artists(dict):
     else:
       return item
 
-  def addAlbum( self, artist, albumName, year, genre)->Album:
+  def add_album( self, artist, albumName, year, genre)->Album:
     """ Adds an Album to the store, if this Album doesn't exist yet. If the Album's Artist doesn't exist yet in the model, it is added. 
         Returns the Album.
     """
-    a = self.addArtist( artist)
+    a = self.add_artist( artist)
     album = Album( albumName, year, genre)
-    album = a.addAlbum( album)
+    album = a.add_album( album)
     return album
   
-  def addTrack( self, file:str, name:str, tracknumber:str, length:str, artist:str, album:str, year:str, genre:str)->Track:
+  def add_track( self, file:str, name:str, tracknumber:str, length:str, artist:str, album:str, year:str, genre:str)->Track:
     """ Adds a track to the store, if this track doesn't exist yet. If the album/artist is not yet in the model it is added.
         Generates also a cover art file for the Track's Album if doesn't exist yet.
         Returns the Track.
     """
-    album = self.addAlbum( artist, album,year,genre) # Tracks's Album & Artist are now defined
+    album = self.add_album( artist, album,year,genre) # Tracks's Album & Artist are now defined
     track = Track( name, tracknumber, length, file)
     track = album.addTrack( track)
     return track
   
-  def addTrackFromDict( self, tags:dict)->Track:
+  def add_track_from_dict( self, tags:dict)->Track:
     """ Adds a track to the store. The track dfinition is a dict object. If an attribute is missing, it is set to ''.
         Generates also a cover art file for the Track's Album if doesn't exist yet.
         Returns the track
@@ -221,27 +223,27 @@ class Artists(dict):
     album= tags.get('album','')
     year= tags.get('date','')
     genre= tags.get('genre','')
-    res = self.addTrack( file, name, tracknumber, length, artist, album, year, genre)
+    res = self.add_track( file, name, tracknumber, length, artist, album, year, genre)
     if res.album is None:
       print( res.name +" has no album.")
     return res
   
-  def getArtists(self, filter:str=None):
+  def get_artists(self, filter:str=None):
     if( filter is None):
       return [*self.keys()]
     else :
       return [ k for k in self.keys() if filter.casefold() in k.casefold() ]
     
-  def updateCoverArt( self, artistName:str=None):
+  def update_cover_art( self, artistName:str=None):
     if artistName is not None:
       artist:Artist = self.get(artistName)
       if artist is not None:
-        self.updateArtistCoverArt( artist)
+        self.update_artist_cover_art( artist)
     else: 
       for artist in self.values():
-        self.updateArtistCoverArt( artist)
+        self.update_artist_cover_art( artist)
 
-  def updateArtistCoverArt( self, artist:Artist):
+  def update_artist_cover_art( self, artist:Artist):
       for album in artist.albums:
         tName:str = getTrackFile( album.tracks[0].file)
         if not isCoverUptodate( album.cover, tName):
