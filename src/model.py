@@ -172,7 +172,7 @@ class Artists(dict):
       l = file.readline()
       while l :
         track = eval(l)
-        if track.get("file") != None:    
+        if folders == None or os.path.normpath( track.get("file")).split( os.sep)[2] in folders:
           self.add_track_from_dict( track)
         l = file.readline()
       file.close()
