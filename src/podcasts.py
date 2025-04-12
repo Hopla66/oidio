@@ -14,7 +14,7 @@ class Podcasts(Artists):
   
   def __init__( self, file:str='radios.json', rfKey:str='rfApi.txt'):
     self.config_file = file
-    Podcasts.__getRfApiKey( rfKey)
+    Podcasts.__get_rfapi_Key( rfKey)
 
   
   def load( self):  #load and cache the podcasts
@@ -24,7 +24,7 @@ class Podcasts(Artists):
         self.load_podcast( r)
     
   @staticmethod
-  def __getRfApiKey( filename:str):
+  def __get_rfapi_Key( filename:str):
     if Podcasts.KEY == "":
       with open( filename) as key_file:
         Podcasts.KEY = key_file.read()
