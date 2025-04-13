@@ -3,6 +3,11 @@ import os
 
 CONFIG_FOLDER = "../cfg/"
 
+
+#    "music_repository": "/media/laurent/data/MUSIK/Music",
+#    "music_mount": "NAS/MUSIK/",
+
+
 class Config():
     def __init__(self, config_file="config.json"):
         self.config_file = config_file
@@ -12,12 +17,16 @@ class Config():
         with open( self.__get_full_path(self.config_file), 'r') as f:
             return json.load(f)
 
+    def get_file_path( self, file:str)->str:
+        """ Return the real path of a file in the musik folder"""
+        return os.path.normpath(os.path.join( self.get_music_repository(), file.replace( self.get_music_mount(),'')))
+    
     def get_app_data(self):
         return self.config.get('oidio_data')
     
     def __get_in_app_data(self, key):
         value = self.config.get(key)
-        return self.__get_full_path( value, self.get_app_data())
+        return os.path.normpath(self.__get_full_path( value, self.get_app_data()))
     
     def get_music_repository(self):
         return self.config.get('music_repository')
@@ -49,4 +58,4 @@ class Config():
     def __get_full_path(self, path, parent=CONFIG_FOLDER):
         if parent == None or path == None or path[0] == '/' or path[0] == '.':
             return path
-        return os.path.join( parent, path)
+        return os.path.normpath( os.path.join( parent, path))

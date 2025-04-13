@@ -1,10 +1,10 @@
 {
-    "oidio_data": "/Users/Laurent/Python/data/cfg",
-    "music_repository": "/Users/Laurent/Python/data/Musik",
+    "oidio_data": "/media/laurent/data/oidio/cfg",
+    "music_repository": "/media/laurent/data/MUSIK/Music",
     "music_mount": "NAS/MUSIK/",
     "cover_art_cache": "cover_art_cache",
     "music_db": "music_db.json",
     "radio_list": "radios.json",
     "rf_key": "rfApi.txt",
-    "mpd_server": "localhost"
+    "mpd_server": "192.168.0.51"
 }

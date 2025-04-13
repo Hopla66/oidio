@@ -3,6 +3,9 @@ from mutagen.id3 import ID3
 from repository import dumpCover, existsCover, getTrackFile, isCoverUptodate
 
 import os
+from datetime import datetime
+
+from config_loader import Config
 
 def create_ID( artist:str, album:str='')->str:
   """ Creates a unique ID for an artist or for an album """
@@ -60,17 +63,17 @@ class Album(object):
 
   def add_track( self, track:Track)->Track:
     """ Adds a Track to this Album, if the Track doesn't exist yet"""
-    t = self.getTrack( track.name)
+    t = self.get_track( track.name)
     if t is None:
       self.tracks.append(track)
       track.album = self
       self.folder =os.path.dirname( track.file)
-      self.writeCoverArt()
+      self.write_coverart()
       return track
     else:
       return t
 
-  def getTrack( self, trackName:str)->Track:
+  def get_track( self, trackName:str)->Track:
     for t in self.tracks:
       if( t.name == trackName):
         return t
@@ -80,13 +83,13 @@ class Album(object):
     for t in self.tracks:
       t.album = self
 
-  def updateCoverArt( self):
+  def update_coverart( self):
     if self.cover == "":
-      self.writeCoverArt()
+      self.write_coverart()
     if isCoverUptodate( self.cover, self.tracks[0].file) == False:
-      self.writeCoverArt()
+      self.write_coverart()
 
-  def writeCoverArt( self, force:bool=False):
+  def write_coverart( self, force:bool=False):
       """ Creates a cover art file for this album if the cover art is not yet defined.
           Extracts the cover art from the first Track of this Album; assuming all tracks have cover art embedded in tag APIC.
           Assumes Album's Artist is defined, because both their names are used to create the file name.
@@ -164,15 +167,19 @@ class Artist(object):
 class Artists(dict):
   """ Store of all Artists with their Albums and Tracks."""
 
-  def __init__(self, file:str='artists.json'):
-    self.config_file = file
+  def __init__(self, config:Config):
+    self.config = config
 
   def load( self, folders:list[str]=None):
-    with open( self.config_file, "r", encoding="utf-8") as file:
+    prefix_pos = self.config.get_music_mount().count( os.sep)
+    print( f'folders {folders}')
+    with open( self.config.get_music_db(), "r", encoding="utf-8") as file:
       l = file.readline()
       while l :
         track = eval(l)
-        if folders == None or os.path.normpath( track.get("file")).split( os.sep)[2] in folders:
+        print( f'add?? {track.get("file")}')
+        if folders == None or os.path.normpath( track.get("file")).split( os.sep)[prefix_pos] in folders:
+          print( f'add {track.get("file")}')
           self.add_track_from_dict( track)
         l = file.readline()
       file.close()
@@ -207,7 +214,7 @@ class Artists(dict):
     """
     album = self.add_album( artist, album,year,genre) # Tracks's Album & Artist are now defined
     track = Track( name, tracknumber, length, file)
-    track = album.addTrack( track)
+    track = album.add_track( track)
     return track
   
   def add_track_from_dict( self, tags:dict)->Track:
@@ -244,9 +251,16 @@ class Artists(dict):
         self.update_artist_cover_art( artist)
 
   def update_artist_cover_art( self, artist:Artist):
-      for album in artist.albums:
-        tName:str = getTrackFile( album.tracks[0].file)
-        if not isCoverUptodate( album.cover, tName):
-          album.writeCoverArt( True)
+    for album in artist.albums:
+      tName:str = self.config.get_file_path( album.tracks[0].file)
+      if not self._is_cover_uptodate( album.cover, tName):
+        album.write_coverart( True)
 
+  def _is_cover_uptodate( self, coverName:str, fileName:str)->bool:
+    """Checks if the cover file is uptodate"""
+    if fileName is None:
+        return True
+    coverTs = datetime.fromtimestamp( os.path.getmtime( os.path.join( self.config.get_coverart_cache(), coverName)))
+    fTs = datetime.fromtimestamp(  fileName)
+    return coverTs >= fTs
 

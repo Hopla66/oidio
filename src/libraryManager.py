@@ -86,7 +86,7 @@ class LibraryScanner(object):
             scan_from = self.__get_last_scan()
         print( f"find all folders changed after {scan_from} in dir {self.library}: ")
         folders = [f.path for f in os.scandir(self.library) if f.is_dir() and (datetime.fromtimestamp( f.stat().st_mtime) > scan_from or self.__has_changes( f.path, scan_from))]
-        print( f" folders : {folders}")
+        print( f"## scanned folders : {folders}")
         return folders
     
     def update_library( self, scan_from:datetime):
@@ -105,9 +105,12 @@ class LibraryScanner(object):
         mpd = MPDAdmin( self.config)
         mpd.dump_db()
 
-    def update_cover_art( self, folders):
-        artists = Artists()
-        artists.load( self.config.get_music_db(), folders)
+    def update_cover_art( self, config:Config, folders):
+        # filter folders and remove \ and /
+        for idx, folder in enumerate(folders):
+            folders[idx] = os.path.basename(folder) #.replace('\\','').replace( '/','')
+        artists = Artists( config)
+        artists.load( folders)
         artists.update_cover_art()
         
 
@@ -123,8 +126,9 @@ if __name__ == '__main__':
     scan_arg = get_arg_date( args)
     config = Config()
     scanner = LibraryScanner( config)
-#    scanner.update_library( scan_arg)
+    folders = scanner.update_library( scan_arg)
     scanner.dump_db()
+    scanner.update_cover_art( config, folders)
 
 
 #scanner.check_mpd()
