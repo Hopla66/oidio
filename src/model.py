@@ -1,6 +1,5 @@
 import hashlib
 from mutagen.id3 import ID3
-from repository import dumpCover, existsCover, getTrackFile, isCoverUptodate
 
 import os
 from datetime import datetime
@@ -68,7 +67,7 @@ class Album(object):
       self.tracks.append(track)
       track.album = self
       self.folder =os.path.dirname( track.file)
-      self.write_coverart()
+      #self.write_coverart()
       return track
     else:
       return t
@@ -82,30 +81,6 @@ class Album(object):
   def check( self):
     for t in self.tracks:
       t.album = self
-
-  def update_coverart( self):
-    if self.cover == "":
-      self.write_coverart()
-    if isCoverUptodate( self.cover, self.tracks[0].file) == False:
-      self.write_coverart()
-
-  def write_coverart( self, force:bool=False):
-      """ Creates a cover art file for this album if the cover art is not yet defined.
-          Extracts the cover art from the first Track of this Album; assuming all tracks have cover art embedded in tag APIC.
-          Assumes Album's Artist is defined, because both their names are used to create the file name.
-      """
-      if self.cover != "" and not force:
-        return
-      filename = self.id+".jpg"
-      if not existsCover(filename) or force:
-        path = getTrackFile(self.tracks[0].file)
-        if( os.path.exists(path) == False):
-           return
-        img = ID3( path).getall("APIC")
-        if( img is None or len(img) == 0 or img[0] is None):
-          return ""
-        dumpCover( img[0].data, filename)
-      self.cover = filename
 
   def list( self):
     print( "  - Album: {0} - {1} genre {2}".format( self.name, self.year, self.genre)) 
@@ -167,23 +142,6 @@ class Artist(object):
 class Artists(dict):
   """ Store of all Artists with their Albums and Tracks."""
 
-  def __init__(self, config:Config):
-    self.config = config
-
-  def load( self, folders:list[str]=None):
-    prefix_pos = self.config.get_music_mount().count( os.sep)
-    print( f'folders {folders}')
-    with open( self.config.get_music_db(), "r", encoding="utf-8") as file:
-      l = file.readline()
-      while l :
-        track = eval(l)
-        print( f'add?? {track.get("file")}')
-        if folders == None or os.path.normpath( track.get("file")).split( os.sep)[prefix_pos] in folders:
-          print( f'add {track.get("file")}')
-          self.add_track_from_dict( track)
-        l = file.readline()
-      file.close()
-
   def add( self, a:Artist):
     """ Adds an Artist to the store, if it doesn't exist yet"""
     self.update( {a.name: a})
@@ -241,26 +199,3 @@ class Artists(dict):
     else :
       return [ k for k in self.keys() if filter.casefold() in k.casefold() ]
     
-  def update_cover_art( self, artistName:str=None):
-    if artistName is not None:
-      artist:Artist = self.get(artistName)
-      if artist is not None:
-        self.update_artist_cover_art( artist)
-    else: 
-      for artist in self.values():
-        self.update_artist_cover_art( artist)
-
-  def update_artist_cover_art( self, artist:Artist):
-    for album in artist.albums:
-      tName:str = self.config.get_file_path( album.tracks[0].file)
-      if not self._is_cover_uptodate( album.cover, tName):
-        album.write_coverart( True)
-
-  def _is_cover_uptodate( self, coverName:str, fileName:str)->bool:
-    """Checks if the cover file is uptodate"""
-    if fileName is None:
-        return True
-    coverTs = datetime.fromtimestamp( os.path.getmtime( os.path.join( self.config.get_coverart_cache(), coverName)))
-    fTs = datetime.fromtimestamp(  fileName)
-    return coverTs >= fTs
-

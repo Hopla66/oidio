@@ -45,6 +45,6 @@ def test_value_mpd_port():
 
 def test_file_path():
     config = Config()
-    assert config.get_file_path("NAS/MUSIK/Tord Gustavsen Trio/Opening/Tord Gustavsen Trio - Opening - 01 - The Circle.mp3")  == os.path.normpath( MUSIC_REPOSITORY + "/Tord Gustavsen Trio/Opening/Tord Gustavsen Trio - Opening - 01 - The Circle.mp3")
+    assert config.get_track_path("NAS/MUSIK/Tord Gustavsen Trio/Opening/Tord Gustavsen Trio - Opening - 01 - The Circle.mp3")  == os.path.normpath( MUSIC_REPOSITORY + "/Tord Gustavsen Trio/Opening/Tord Gustavsen Trio - Opening - 01 - The Circle.mp3")
     
 

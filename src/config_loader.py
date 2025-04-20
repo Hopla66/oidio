@@ -17,7 +17,7 @@ class Config():
         with open( self.__get_full_path(self.config_file), 'r') as f:
             return json.load(f)
 
-    def get_file_path( self, file:str)->str:
+    def get_track_path( self, file:str)->str:
         """ Return the real path of a file in the musik folder"""
         return os.path.normpath(os.path.join( self.get_music_repository(), file.replace( self.get_music_mount(),'')))
     
@@ -29,7 +29,7 @@ class Config():
         return os.path.normpath(self.__get_full_path( value, self.get_app_data()))
     
     def get_music_repository(self):
-        return self.config.get('music_repository')
+        return os.path.normpath(self.config.get('music_repository'))
     
     def get_music_mount(self):
         return self.config.get('music_mount')
