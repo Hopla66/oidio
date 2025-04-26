@@ -107,11 +107,12 @@
       function displayStatus( status) {
         console.log(" Status ::" + JSON.stringify(status))
         toggleIcon(status.state == 'play')
- 
-        templateName = ( status.currentSong.type == 'track') ? "t_play_song" : "t_play_radio";
+
         if( status.state == 'stop') {
+          TEMPLATES.clear( document.querySelector( '#info')); // clear the info ??
           return;
         }
+        templateName = ( status.currentSong.type == 'track') ? "t_play_song" : "t_play_radio";
         TEMPLATES.injectParent( templateName, status.currentSong, document.querySelector( '#info'));
         if( status.currentSong.type == 'track') {
           startPlaying( Number(status.currentSong.length), Number(status.currentSong.elapsed));
@@ -197,7 +198,7 @@
 
       function startWebSocket() {
 
-        ws = new WebSocket("ws://localhost:8000/ws");
+        ws = new WebSocket("ws://" + location.host + "/ws"); 
         ws.onmessage = function(event) {
           console.log('received ...'+event.data)
           displayStatus( JSON.parse( event.data))

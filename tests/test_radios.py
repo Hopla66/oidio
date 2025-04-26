@@ -18,6 +18,11 @@ def test_radios_with_config():
     radios = Radios( Config().get_radio_list())
     assert radios is not None
 
+def test_get_radio():
+   radios = Radios( Config().get_radio_list())
+   radios.load()
+   assert radios.get_radio( 'http://icecast.radiofrance.fr/fipjazz-hifi.aac') is not None
+
 def test_get_cover():
    radios = Radios( Config().get_radio_list())
    radios.load()

@@ -10,24 +10,25 @@ import asyncio
 from playerasync import Player
 #from playerasync import Status
 from model import Artist
-from repository import REPOSITORY_FOLDER
+from config_loader import Config
 
 import logging
 
 # uvicorn main:app --reload
 
 logger = logging.getLogger('uvicorn.error')
+config = Config()
 
 app = FastAPI()
-app.mount( "/static", StaticFiles(directory=REPOSITORY_FOLDER), name="static")
+app.mount( "/static", StaticFiles(directory=config.get_music_repository()), name="static")
 app.mount( "/public", StaticFiles(directory="public",html = True), name="public")
 
-mpd = Player(server="192.168.0.51", logger='uvicorn.error')
+mpd = Player( config.get_MPD_server(), logger='uvicorn.error')
 artists = mpd.loadDb('mpd.json')
 
 #mpd.connect()
 
-socket = Player(server="192.168.0.51", logger='uvicorn.error')
+socket = Player( config.get_MPD_server(), logger='uvicorn.error')
 
 @app.get("/")
 async def read_index():
@@ -120,7 +121,7 @@ async def playPrevious():
 @app.post("/control/play")
 async def togglePlay():
     try:
-        return await mpd.togglePlay()
+        return await mpd.toggle_play()
     except Exception as ex:
         logger.info(f'#### error :: {ex}')
         return { "status" : "NOK"}

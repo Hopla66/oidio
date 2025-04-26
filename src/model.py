@@ -1,10 +1,6 @@
 import hashlib
-from mutagen.id3 import ID3
-
 import os
-from datetime import datetime
 
-from config_loader import Config
 
 def create_ID( artist:str, album:str='')->str:
   """ Creates a unique ID for an artist or for an album """
@@ -12,22 +8,22 @@ def create_ID( artist:str, album:str='')->str:
   return res
  
 class Artist:
-    def __init__(self):
-        pass
+  def __init__(self):
+    pass
     
 class Album:
-    def __init__(self):
-        pass    
+  def __init__(self):
+    pass    
 
 
 class Track(object):
   """ Track of an Album."""
-  def __init__( self, name, tracknumber, length, file, album:Album=None):
-    self.name = name
-    self.tracknumber = tracknumber
-    self.length = length
-    self._album = album
-    self.file = file
+  def __init__( self, name:str, tracknumber:str, length:str, file:str, album:Album=None):
+    self.name:str = name
+    self.tracknumber:str = tracknumber
+    self.length:str = length
+    self._album:Album = album
+    self.file:str = file
 
   @property
   def album(self)->Album:
@@ -47,22 +43,22 @@ class Track(object):
 class Album(object):
   """ Album of an Artist."""
   def __init__( self, name:str, year:str, genre:str, artist:Artist=None, tracks:list[Track]=None, id:str=""):
-    self.name = name
-    self.year = year
-    self.genre = genre
-    self._artist = artist
-    self.cover = ""
-    self.folder = ""
-    if tracks is None or len(tracks) == 0:
-      self.tracks = []
-    else:
+    self.name:str = name
+    self.year:str = year
+    self.genre:str = genre
+    self._artist:Artist = artist
+    self.cover:str = ""
+    self.folder:str = ""
+    self.tracks:list[Track] = []
+
+    if tracks is not None and len(tracks) > 0:
       self.tracks = tracks
       self.folder = os.path.dirname( tracks[0].file)
-    self.id = create_ID( name)
+    self.id:str = create_ID( name)
 
   def add_track( self, track:Track)->Track:
     """ Adds a Track to this Album, if the Track doesn't exist yet"""
-    t = self.get_track( track.name)
+    t:Track = self.get_track( track.name)
     if t is None:
       self.tracks.append(track)
       track.album = self
@@ -104,15 +100,13 @@ class Album(object):
 #
 class Artist(object):
   def __init__( self, name:str, id:str='', albums:list[Album]=None):
-    if albums is None:
-      self.albums = []
-    else:
-      self.albums = albums
-    self.name = name
-    self.id = create_ID( name)
+
+    self.albums:list[Album] = [] if albums is None else albums
+    self.name:str = name
+    self.id:str = create_ID( name)
 
   def add_album( self, album:Album)->Album:
-    a = self.get_album(album.name)
+    a:Album = self.get_album(album.name)
     if a is None:
       a = album
       self.albums.append( a)
@@ -170,8 +164,8 @@ class Artists(dict):
         Generates also a cover art file for the Track's Album if doesn't exist yet.
         Returns the Track.
     """
-    album = self.add_album( artist, album,year,genre) # Tracks's Album & Artist are now defined
-    track = Track( name, tracknumber, length, file)
+    album:Album = self.add_album( artist, album,year,genre) # Tracks's Album & Artist are now defined
+    track:Track = Track( name, tracknumber, length, file)
     track = album.add_track( track)
     return track
   

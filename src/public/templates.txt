@@ -21,13 +21,15 @@
     <script id="t_artist" type="text/x-dot-template">
       <h2 id="name">{{=it.name}} </h2>
       <div id="albums" class="albums"> 
-      {{~ it.albums :p }}
-        <div  class="albumThumb">
-          <img class="thumb" src="static/{{=p.cover}}" onclick="displayAlbum('{{=p.idx}}')">
-          <h3>{{=p.name}}</h3>
-          <div>{{=p.year}}</div>
-        </div>
-      {{~ }}      
+      {{? it.albums.length > 1}}
+        {{~ it.albums :p }}
+          <div  class="albumThumb">
+            <img class="thumb" src="static/{{=p.cover}}" onclick="displayAlbum('{{=p.idx}}')">
+            <h3>{{=p.name}}</h3>
+            <div>{{=p.year}}</div>
+          </div>
+        {{~ }}
+      {{? }}    
       </div>
       <div id="album" class="album"></div>
     </script>

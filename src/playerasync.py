@@ -33,13 +33,13 @@ class Player(object):
         self.radios = Radios( config.get_radio_list())
 
     def stop( self):
-        self.client.close()                     # send the close command
+        #self.client.close()                     # send the close command
         self.client.disconnect() 
 
     def __str__( self):
         return self.client.mpd_version
     
-    async def togglePlay( self):
+    async def toggle_play( self):
         self.log( 'togglePlay ... ')
         await self.client.pause()
     
@@ -52,7 +52,7 @@ class Player(object):
             return 'radio'
 
     
-    async def getStatus( self):
+    async def get_status( self):
         self.log( 'getStatus ... ')
         await self.ping()
         current = await self.client.currentsong()
@@ -60,32 +60,15 @@ class Player(object):
 
         params = { 'song' :current, 'status' : status}
         self.log( "getStatus :: "+ json.dumps(params))
+        return params
 
-        m = Music( params, self.radios)
-        res = {
-            "currentSong" : m,
-            "state" : status['state'],
-            "volume" : status['volume'],
-            "repeat" : status['repeat'],
-            "random" : status['random']
-        }
-        self.log( "## done ")
-        #self.log( 'getStatus = '+json.dumps(res))
-        return res
-    
-    async def getPlaylist( self):
+     
+    async def get_playlist( self):
         self.log('getPlaylist ...')
+        await self.ping()
         pl = await self.client.playlistinfo()
         current = await self.client.currentsong()
-        res = []
-        for song in pl:
-            self.log('getPlaylist '+json.dumps(song))
-
-            m = Music( { 'current' :current, 'song' : song})
-
-            #elt = self.getPlaylistElt( song, current)
-            res.append( m)
-        return res
+        return {'list' :pl, 'current' : current}
     
     def getPlaylistElt( self, song, current):
         if self.getType(song) == 'song':
@@ -101,7 +84,7 @@ class Player(object):
     async def idle( self):
         async for subsystem in self.client.idle(['player']):
             break
-        return await self.getStatus()
+        return await self.get_status()
 
 
     async def ping( self):
@@ -113,32 +96,28 @@ class Player(object):
 
     async def seek( self, secs):
         await self.client.seekcur( secs)
-        return await self.getStatus()
     
     async def playNext( self):
         await self.client.next()
-        return await self.getStatus()
  
     async def playPrevious( self):
         await self.client.previous()
-        return await self.getStatus()        
-
+ 
     async def playAlbum( self, tracks:list[str], volume:int=None, repeat:int=0):
+        await self.ping()
         self.setPlayParams( volume, repeat)
         await self.client.clear()
         for track in tracks:
             await self.client.add( track)
         await self.client.play()
-        return await self.getStatus()
-       
     
     async def play( self, fname:str, volume:int=None, repeat:int=0):
+        await self.ping()
         self.setPlayParams( volume, repeat)
         await self.client.clear()
         await self.client.add( fname)
         self.log( 'play : '+fname)
         await self.client.play()
-        return await self.getStatus()
 
     def setPlayParams( self, volume:int=None, repeat:int=1, single:int=0):
         if volume is not None:
@@ -153,32 +132,7 @@ class Player(object):
         except Exception as inst:
             self.log("## reconnect err")
             
-    def dumpDb( self, fname:str):
-        self.ping()
-        l = self.client.listallinfo()
-        with open( os.path.join( REPO, "mpd2.json"), "w", encoding="utf-8") as file:
-            for s in l:
-                print(s)
-                if s.get("file") != None:
-                    file.write( str(s)+"\n")
-        file.close()        
 
-    def loadDb( self, fname:str)->Artists:
-        with open( os.path.join( REPO, fname), "r", encoding="utf-8") as file:
-            l = file.readline()
-            while l :
-                self.addTrackFromTags( l)
-                l = file.readline()
-        file.close()
-        return self.artists
-
-    def addTrackFromTags( self, l:str)->Track:
-        tags = eval(l) 
-        track = self.artists.add_track_from_dict( tags)
-        return track
-    
-    def getRadios( self):
-        return self.radios.getList()
     
     def log( self, msg:str):
         if self.logger is not None:

@@ -36,7 +36,7 @@ class MPDAdmin(object):
     
     def update( self, folder:str):
         while self.is_updating():
-            time.sleep( 1)
+            time.sleep( 0.5)
         self.ping()
         return self.client.update( folder)
 

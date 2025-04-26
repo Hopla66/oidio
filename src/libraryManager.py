@@ -73,5 +73,5 @@ if __name__ == '__main__':
         print( "No folder changed since last scan.")
         sys.exit(0)
     loader = ArtistsLoader( config)
-    loader.load_db( folders, True)
+    loader.load( folders, True)
 

@@ -13,13 +13,13 @@ class ArtistsLoader():
   def __init__( self, config:Config):
     self.config = config
 
-  def dump_db( self):
+  def dump( self):
     """ dumps the artists list from mdp.
     """
     admin = MPDAdmin( self.config)
     admin.dump_db()
 
-  def load_db( self, folders:list[str]=[], update_coverart:bool=False)->Artists:
+  def load( self, folders:list[str]=[], update_coverart:bool=False)->Artists:
     artists = Artists()
     do_filter = len( folders) > 0
     with open( self.config.get_music_db(), "r", encoding="utf-8") as file:
@@ -69,9 +69,17 @@ class ArtistsLoader():
     """ Checks if the cover file exists
         Returns the cover file name and if it exists
     """
-    cover = os.path.join( self.config.get_coverart_cache(), album.id+".jpg")
-    return cover, os.path.exists( cover)
+    cover_name = album.id+".jpg"
+    cover = os.path.join( self.config.get_coverart_cache(), cover_name)
+    return cover_name, os.path.exists( cover)
       
+  def __delete_cover( self, cover_name:str, album:Album):
+    """ Deletes the cover file if it exists
+    """
+    try:
+      os.remove( os.path.join( self.config.get_coverart_cache(), cover_name))
+    except OSError as e:
+      print( f"Error deleting file {cover_name} for album {album.name}: {e}")
 
   def set_coverart( self, album:Album, update_coverart:bool=False)->None:
     """ Sets the cover art for the album. If the cover file doesn't exist, it is created.
@@ -79,21 +87,21 @@ class ArtistsLoader():
     """
     if len(album.tracks) == 0:
       return
-    cover_file, exists = self.__exists_cover( album)
-    album.cover = cover_file if exists else ""
+    cover_name, exists_cover = self.__exists_cover( album)
+    album.cover = cover_name if exists_cover else ""
 
-    if update_coverart or not exists:
+    if update_coverart or not exists_cover:
       track = self.__find_track( album)
       if track is None:
-        if cover_file is not None:
-          os.remove( cover_file)
+        if exists_cover:
+          self.__delete_cover( cover_name)
         return
       # regenerate cover file
-      if not exists or not self.__is_cover_uptodate( cover_file, track):
+      if not exists_cover or not self.__is_cover_uptodate( cover_name, track):
         img = ID3( track).getall("APIC")
         if( img is None or len(img) == 0 or img[0] is None):
           return
-        self.__dump_cover( img[0].data, cover_file)
+        album.cover = self.__dump_cover( img[0].data, cover_name)
 
   def __find_track( self, album:Album)->str|None:
     """ Finds a track file for the album. The track file is the first track in the album.
@@ -110,13 +118,14 @@ class ArtistsLoader():
     """Checks if the cover file is up to date: newer than the track file"""
     if track_file is None:
         return True
-    cover_ts = datetime.fromtimestamp( os.path.getmtime( cover_name))
+    cover_ts = datetime.fromtimestamp( os.path.getmtime( os.path.join( self.config.get_coverart_cache(), cover_name)))
     track_ts = datetime.fromtimestamp( os.path.getmtime(track_file))
     return cover_ts >= track_ts
   
-  def __dump_cover( self, data, fname:str):
+  def __dump_cover( self, data, cover_name:str):
     """ Stores cover art image as file """
     cover = BytesIO( data)
     img = Image.open( cover)
     img = img.resize( [600, 600], Image.Resampling.NEAREST)
-    img.save( os.path.join( self.config.get_coverart_cache(), fname))  
+    img.save( os.path.join( self.config.get_coverart_cache(), cover_name), "JPEG")
+    return cover_name

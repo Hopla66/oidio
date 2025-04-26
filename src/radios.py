@@ -18,26 +18,24 @@ class Radios(Artists):
                 radio.album.cover = r['cover']
             json_data.close()
 
-    def get_list( self):
-        return self.get('RADIOS').albums
+    def get_all( self)-> Artist:
+        return self.get('RADIOS')
+    
+    def get_list( self)-> list[Album]:
+        return self.get_all().albums
 
     def get_radio( self, filename:str)->Track|None:
-        radioList = self.get('RADIOS').albums
+        radioList = self.get_list()
         for r in radioList:
             if( r.tracks[0].file == filename):
                 return r.tracks[0]
         return None
 
-    def get_name( self, filename:str):
+    def get_name( self, filename:str)->str:
         radio = self.get_radio( filename)
-        if ( radio == None):
-            return ""
-        else:
-            return radio.name
+        return "" if radio == None else radio.name
 
-    def get_cover( self, filename:str):
+    def get_cover( self, filename:str)->str:
         radio = self.get_radio( filename)
-        if ( radio == None):
-            return ""
-        else:
-            return radio.album.cover
+        return "" if radio == None else radio.album.cover
+    

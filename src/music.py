@@ -18,7 +18,7 @@ class Music(object):
     """ Music element from mpd. """
     
     def __init__( self, mpdDef:dict, radios:Radios):
-        self.radios = radios
+        self.__radios = radios
         self.type = ""
         self.artist = ""
         self.album = ""
@@ -64,7 +64,7 @@ class Music(object):
 
     def __init_radio( self, mpdDef):
         self.artist = 'RADIOS'
-        self.title = self.radios.get_name( mpdDef['file'])
+        self.title = self.__radios.get_name( mpdDef['file'])
         self.file = mpdDef['file']
 
     def is_radio( self):
@@ -77,8 +77,3 @@ class Music(object):
     def __is_status( self, item:dict):
         return ('status' in item)
     
-"""
-x = Music( data1)
-json = jsons.dumps( x, strip_properties=True, strip_privates=True)
-print( json)
-"""
